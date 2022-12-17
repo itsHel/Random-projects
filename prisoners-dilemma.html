@@ -1,0 +1,203 @@
+<!doctype html>
+<html>
+    <head>
+        <style>
+            :root {
+                --border: rgba(0,0,0,0.15);
+            }
+
+            body{
+                font-family: 'Comic Sans MS', 'Comic Sans';
+                padding: 0;
+                margin: 0;
+                color: rgba(0,0,0,0.44);
+            }
+            main{
+                max-width: 1020px;
+                margin: 0 auto;
+                padding: 24px 32px;
+                display: flex;
+                gap:40px;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+            h2{
+                margin-bottom: 6px;
+            }
+            #wrapper > div{
+                margin: 3px 0;
+            }
+            .link{
+                color: rgb(0, 151, 201);
+            }
+            .link:hover{
+                text-decoration: none;
+            }
+            .graphWrapper{
+                text-align: center;
+            }
+            .graph{
+                position: relative;
+                height: 300px;
+                width: 511px;
+                padding: 0 1px;
+                display: flex;
+                box-sizing: border-box;
+                border:2px solid var(--border);
+            }
+            .graph::before{
+                content: "0";
+                position: absolute;
+                left:-6px;
+                top:101%;
+            }
+            .graph::after{
+                content: "100";
+                position: absolute;
+                right:-15px;
+                top:101%;
+            }
+            .column{
+                display: inline-block;
+                width:5px;
+                height: 0;
+                background: #d71313;
+                transition: height 1s;
+            }
+            .middleBorder{
+                background: var(--border);
+                height: 300px;
+                width: 2px;
+                position: absolute;
+                left:calc(50% - 1px);
+            }
+        </style>
+    </head>
+
+    <body>
+        <main>
+            <div class="graphWrapper">
+                <h2>Random</h2>
+                <div class="middleBorder"></div>
+                <div id="randomGraph" class="graph"></div>
+            </div>
+            <div class="graphWrapper">
+                <h2>Follow <span id="allFound"></span></h2>
+                <div class="middleBorder"></div>
+                <div id="followGraph" class="graph"></div>
+            </div>
+            <!-- <div class="graphWrapper">
+                <h2>Semi Random</h2>
+                <div class="middleBorder"></div>
+                <div id="semiRandomGraph" class="graph"></div>
+            </div> -->
+        </main>
+    </body>
+
+    <script>
+        const testCount = 1_000_000;
+
+        const dataPxMult = 2750 / testCount;
+        const $ = document.querySelector.bind(document);
+        const $$ = document.querySelectorAll.bind(document);
+        const randomGraph = $("#randomGraph");
+        const followGraph = $("#followGraph");
+
+        Object.defineProperty(Array.prototype, 'shuffle', {
+            value: function() {
+                for (let i = this.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [this[i], this[j]] = [this[j], this[i]];
+                }
+                return this;
+            }
+        });
+
+        let columnDivs = "";
+        for(let i = 0; i < 101; i++){
+            columnDivs += "<div class=column></div>";
+        }
+
+        $$(".graph").forEach(element => {
+            element.innerHTML = columnDivs;
+        });
+        
+        let randomResults = new Array(101).fill(0);
+        let followResults = new Array(101).fill(0);
+
+        let myArr = []
+        for(let i = 1; i < 101; i++){
+            myArr.push(i);
+        }
+
+        // ************************* Test *************************
+        for(let i = 0; i < testCount; i++){
+            myArr.shuffle();
+
+            randomResults[testRandom(myArr)] += 1;
+            followResults[testFollow(myArr)] += 1;
+        }
+        
+        setTimeout(function(){
+            addData(randomGraph, randomResults);
+            addData(followGraph, followResults);
+
+            $("#allFound").innerText = "(All found: " + Math.round((followResults[100] / testCount) *1000)/10 + "%)";
+        }, 0);
+
+		// TODO get better performance by not changing array (start at pos and go with +1 ?)
+        function testRandom(arr){
+            let foundCount = 0;
+
+            for(let i = 1; i < 101; i++){
+                let testArr = [...arr];
+
+                for(let o = 0; o < 50; o++){
+                    let guess = Math.floor(Math.random() * testArr.length);
+
+                    if(testArr[guess] == i){
+                        foundCount++;
+                        break;
+                    } else {
+                        testArr.splice(guess, 1);
+                    }
+                }
+            }
+
+            return foundCount;
+        }
+
+        function testFollow(arr){
+            let foundCount = 0;
+
+            for(let i = 1; i < 101; i++){
+                followNext(i, 49);
+                
+                function followNext(target, triesLeft){
+                    // console.log("target: " + target);
+                    // console.log("FOUND: " + arr[target - 1]);
+                    
+                    if(arr[target - 1] == i){
+                        foundCount++;
+                        return;
+                    }
+                    
+                    if(triesLeft){
+                        followNext(arr[target - 1], triesLeft - 1);
+                    }
+                }
+            }
+
+            return foundCount;
+        }
+
+        function addData(graph, results){
+            console.log(graph.id);
+            console.log(results);
+            graph.querySelectorAll("div").forEach((div, index) => {
+                div.style.height = (results[index] * dataPxMult) + "px";
+            });
+        }
+    </script>
+</html>
