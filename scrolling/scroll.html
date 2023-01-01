@@ -21,15 +21,27 @@
                 margin: 40px auto 0 auto    ;
             }
 
+            ::-webkit-scrollbar {
+                width: 7px;
+                height: 7px;
+                background-color: rgb(199, 199, 199);
+            }
+            ::-webkit-scrollbar-thumb {
+                width: 7px;
+                height: 7px;
+                background-color: #1b252f;
+                border-radius: 8px;
+            }
+
             .sidemenu-wrapper{
-                --sidemenu-width: 108px;
+                --sidemenu-width: 100px;
                 --sidemenu-max-height: 600px;
                 --sidemenu-toggle-background: #AA1111;
-
+             
                 width:var(--sidemenu-width) !important;
                 position: fixed;
                 right:0;
-                top:400px;
+                top:300px;
                 min-height: 120px;
                 max-height: var(--sidemenu-max-height);
                 background-color: #fff;
@@ -88,9 +100,11 @@
                 transition: transform 0.5s;
             }
             .sidemenu input{
-                width:80%;
+                width:88%;
                 box-sizing: border-box;
                 text-align: center;
+                font-size: 16px;
+                padding-left: 18px;
             }
             .sidemenu-part{
                 display: flex;
@@ -172,23 +186,23 @@
             <div class=sidemenu>
                 <div class="sidemenu-part">
                     <label class="sidemenu-part-label" for="width">Width</label>
-                    <div class="sidemenu-part-input"><input id="width"></div>
+                    <div class="sidemenu-part-input"><input type="number" id="width"></div>
                 </div>
                 <div class="sidemenu-part">
                     <label class="sidemenu-under-part" for="columns">Columns</label>
-                    <div class="sidemenu-part-input"><input id="columns"></div>
+                    <div class="sidemenu-part-input"><input type="number" id="columns"></div>
                 </div>
                 <div class="sidemenu-part">
                     <label class="sidemenu-under-part" for="autoscroll-toggle">Autoscroll</label>
                     <div class="sidemenu-part-input"><input class="sidemenu-checkbox" type="checkbox" id="autoscroll-toggle"></div>
-                    <div class="sidemenu-part-input"><input id="autoscroll-speed"></div>
+                    <div class="sidemenu-part-input"><input type="number" id="autoscroll-speed"></div>
                 </div>
                 <div class="sidemenu-part">
                     <label class="sidemenu-under-part" for="random-toggle">Random</label>
                     <div class="sidemenu-part-input"><input class="sidemenu-checkbox" type="checkbox" id="random-toggle"></div>
                 </div>
                 <div class="sidemenu-part">
-                    <div class="sidemenu-part-input"><input type="file" id="filelist-input"></div>
+                    <div class="sidemenu-part-input"><input accept=".txt" type="file" id="filelist-input"></div>
                 </div>
             </div>
         </div>
@@ -202,7 +216,7 @@
         const $ = document.querySelector.bind(document);
         const $$ = document.querySelectorAll.bind(document);
         
-        const loadCount = 12;
+        const loadCount = 80;
         
         const widthInput = $("#width");
         const columnsInput = $("#columns");
@@ -471,6 +485,7 @@
             randomInput.addEventListener("change", function(e){
                 settings.set("random", e.target.checked);
             });
+
             filelistInput.addEventListener("input", function(e){
                 const file = e.target.files[0];
 
@@ -488,6 +503,8 @@
                         }
 
                         localStorage["filelist"] = JSON.stringify(filelist);
+                        this.value = "";
+
                         reset(settings.values.random);
                     });
 
