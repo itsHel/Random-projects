@@ -275,6 +275,7 @@
                     case "scroll-toggle":
                         if(value){
                             requestAnimationFrame(animateScroll);
+                            $(".sidemenu-wrapper").classList.add("side-hidden");
                         } else {
                             cancelAnimationFrame(scrollRequest);
                         }
@@ -438,6 +439,8 @@
         }
 
         window.addEventListener("keydown", function(e){
+            const modal = $("#modal");
+            
             if(e.key == "Escape"){
                 if(modal.classList.contains("modal-show")){
                     modal.classList.remove("modal-show");
