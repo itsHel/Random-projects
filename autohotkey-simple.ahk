@@ -340,7 +340,7 @@ zapisc:
 		sleep 50
 		sendinput,^v
 		return
-	$!v::send,debug.notification()`{left}
+	$!v::send,debug.notification(){left}
 }#IfWinActive
 
 #ifWinactive ahk_class mintty						;gitbash
