@@ -23,11 +23,11 @@ bool property sigilStoneInstalled auto hidden
 objectReference property lastSummonedObject auto hidden
 ; store whatever we summoned last time to help clean up dead references.
 
-Ingredient property strangeRemains auto
+;Ingredient property strangeRemains auto
 
 ;MagicEffect[] property weaponEnchantments auto
 ;MagicEffect[] property armorEnchantments auto
-MagicEffect[] property armorEnchantmentsSpecial auto
+;MagicEffect[] property armorEnchantmentsSpecial auto
 
 Formlist property keywordsArmorLevel1 auto
 Formlist property keywordsArmorLevel2 auto
@@ -48,28 +48,30 @@ Formlist property armorEnchantmentsSpecialBest auto
 
 SoulGem property blackSoulGem auto
 Ingredient property voidSalts auto
+Ingredient property briarHeart auto
 
-Keyword Property disallowEnchantingKeyword Auto  
-Keyword Property disallowSellingKeyword Auto  
+Keyword property disallowEnchantingKeyword auto  
+Keyword property disallowSellingKeyword auto  
 
-Actor Property enchanter Auto  
+Actor property enchanter auto  
 
 Float randomDifference = 0.15
+String wrongRecipeMessage = "This recipe doesn't seem to be valid..."
 
-Event onLoad()
+event onLoad()
     debug.notification("insertedItems.length: ")
-endEVENT
+endEvent
 
 ; 000CE734
 
-STATE busy
-    EVENT onActivate(objectReference actronaut)
+state busy
+    event onActivate(objectReference actronaut)
     ; debug.trace("Atronach Forge is currently busy.  Try again later")
-    endEVENT
-endSTATE
+    endEvent
+endState
 
-auto STATE ready
-    EVENT onActivate(objectReference actronaut)
+auto state ready
+    event onActivate(objectReference actronaut)
         gotoState("busy")
         bool DaedricItemCrafted
         bool VanillaItemCrafted
@@ -80,24 +82,23 @@ auto STATE ready
             ; debug.trace("Atronach Forge detected Sigil Stone, attempt Daedric Combines first")
             DaedricItemCrafted = scanForRecipes(SigilRecipeList, SigilResultList)
             utility.wait(0.1)
-        endif
+        endIf
 
         ; if no sigil stone, or if we checked and found no valid Daedric recipes...
         if sigilStoneInstalled == FALSE || DaedricItemCrafted == FALSE
         ; debug.trace("Atronach Forge Either did not detect Sigil Stone, or no deadric combines were found")
             VanillaItemCrafted = ScanForRecipes(RecipeList, ResultList)
-        endif
+        endIf
         if VanillaItemCrafted == FALSE && DaedricItemCrafted == FALSE
             ScanForEnchantments(RecipeList, ResultList)
-        endif
+        endIf
 
 
         gotoState("ready")
+    endEvent
+endState
 
-    endEVENT
-endSTATE
-
-bool FUNCTION ScanForRecipes(formlist Recipes, formList Results)
+bool Function ScanForRecipes(formlist Recipes, formList Results)
 
     ; set up our counter vars
     int i = 0
@@ -107,7 +108,7 @@ bool FUNCTION ScanForRecipes(formlist Recipes, formList Results)
 
     ;========================================================
 
-    While checking == TRUE && i < t
+    while checking == TRUE && i < t
         formlist currentRecipe = (Recipes.getAt(i)) as formList
         if currentRecipe == NONE
             ; debug.trace("ERROR: Atronach Forge trying to check a NONE recipe")
@@ -120,13 +121,13 @@ bool FUNCTION ScanForRecipes(formlist Recipes, formList Results)
                 checking = FALSE
                 else
                 ; found nothing
-            endif
-        endif
+            endIf
+        endIf
 
         if foundCombine == FALSE
             ; only increment if we are continuing to loop
             i += 1
-        endif
+        endIf
 
     endWhile
 
@@ -137,7 +138,7 @@ bool FUNCTION ScanForRecipes(formlist Recipes, formList Results)
         summonFXpoint.placeatme(summonFX);summonFX.playGamebryoAnimation("mIdle")
         utility.wait(0.33)
         ;debug.notification(Results.getAt(i))
-        objectReference newREF = createPoint.placeAtMe(Results.getAt(i))
+        objectReference createdItemREF = createPoint.placeAtMe(Results.getAt(i))
 
         ; if the last thing I summoned is a dead actor, just get rid of it.
         if (lastSummonedObject)
@@ -146,27 +147,27 @@ bool FUNCTION ScanForRecipes(formlist Recipes, formList Results)
                 lastSummonedObject.RemoveAllItems(DropBox, FALSE, TRUE)
                 lastSummonedObject.disable()
                 lastSummonedObject.delete()
-            endif
-        endif
+            endIf
+        endIf
 
         ; now store whatever we just created as the current/last summoned object
-        lastSummonedObject = newREF
+        lastSummonedObject = createdItemREF
 
-        if (newREF as actor) != NONE
-            (newREF as actor).startCombat(game.getPlayer())
-        endif
+        if (createdItemREF as actor) != NONE
+            (createdItemREF as actor).startCombat(game.getPlayer())
+        endIf
 
         return TRUE
     else
         ; did not find any valid combines - choose a "failure" scenario
         return FALSE
-    endif
+    endIf
 
-endFUNCTION
+endFunction
 ;========================================================
 ;========================================================
 ;========================================================
-bool FUNCTION scanSubList(formList recipe)
+bool Function scanSubList(formList recipe)
     int size = recipe.getSize()
     int cnt = 0
 
@@ -180,15 +181,14 @@ bool FUNCTION scanSubList(formList recipe)
 
             ; ;debug.trace("I Have item "+toCheck+" ("+cnt+") for recipe #"+recipe)
             ; we have the item in cnt
-        endif
+        endIf
         cnt += 1
     endWhile
 
     return TRUE
+endFunction
 
-endFUNCTION
-
-FUNCTION removeIngredients(formlist recipe)
+Function removeIngredients(formlist recipe)
     int size = recipe.getSize()
     int cnt = 0
 
@@ -198,11 +198,11 @@ FUNCTION removeIngredients(formlist recipe)
         ; debug.trace("Atronach Forge is consuming "+toCheck)
         cnt += 1
     endWhile
-endFUNCTION
+endFunction
 
 
 
-bool FUNCTION ScanForEnchantments(formlist Recipes, formList Results)
+bool Function ScanForEnchantments(formlist Recipes, formList Results)
 ;    if(insertedItems.length != 1)
 ;        debug.notification("Seems like recipe is wrong...")
 ;        return false
@@ -213,44 +213,67 @@ bool FUNCTION ScanForEnchantments(formlist Recipes, formList Results)
 	int i = 0
 	debug.notification(size)
 
-objectReference newREF
-; here *************
+objectReference createdItemREF
 	while i < size
-        		debug.notification("materialLevel " +i)
-		Weapon removedWeapon = dropBox.GetNthForm(i) as Weapon
-		Armor removedArmor = dropBox.GetNthForm(i) as Armor
+		weapon removedWeapon = dropBox.GetNthForm(i) as weapon
+		armor removedArmor = dropBox.GetNthForm(i) as armor
 	;	objectReference obj = dropBox.GetNthForm(i) as objectReference
 	;	debug.notification(obj)
 	;	obj.moveto(createPoint, 0,0,0,false)
 
 		if(removedWeapon)
-            dropBox.RemoveItem(removedWeapon, 1, true, game.getPlayer())
-
+            dropBox.RemoveItem(removedWeapon, 1, TRUE, Enchanter)
+            
 			int randomEnchIndex = Utility.RandomInt(0, weaponEnchantmentsWeak.GetSize() - 1)
-			int materialLevel = getWeaponMaterialLevel(removedWeapon)
-			float enchStrength = getEnchStrenght(randomEnchIndex, materialLevel, true)
+			int materialLevel = getMaterialLevel(removedWeapon, TRUE)
+            int voidSaltsNeeded = materialLevel + 1
 
-			;debug.notification("enchIndex" + randomEnchIndex)
+            bool ingredientsMatch = ScanForEnchIngredients(voidSaltsNeeded)
+            ;if(!ingredientsMatch)
+            ;    return FALSE
+            ;endIf
+			float enchStrength = GetEnchStrenght(randomEnchIndex, materialLevel, TRUE)
+
+			debug.notification("enchIndex" + randomEnchIndex)
     		debug.notification("materialLevel " + materialLevel)
     		debug.notification("enchStrength " + enchStrength)
+    		debug.notification("ingredientsMatch " + ingredientsMatch)
 
 
 return false
 
-        EnchantmentCheck(dropBox.GetNthForm(i))
-			newREF = createPoint.placeAtMe(removedWeapon)
+            Enchanter.EquipItem(removedWeapon)
+            ; 0 - isnt enchanted, 1 - has base enchantment, 2 - has player made enchantment
+            float itemTempering = TemperingCheck(removedWeapon)
+            int itemOldEnchantment = EnchantmentCheck(removedWeapon)
+
+            if(itemOldEnchantment == 1)
+                debug.notification("1 - has base enchantment")
+                Enchanter.RemoveItem(removedWeapon, 1, TRUE, dropBox)
+                debug.notification(wrongRecipeMessage)
+                return FALSE
+            elseif(itemOldEnchantment == 2)
+                debug.notification("2 - has player made enchantment")
+                Disenchant(removedWeapon, itemTempering)
+                setToDefaultState()
+                return TRUE
+            endIf
+            debug.notification("0 - isnt enchanted")
+
+           ; Enchanter.RemoveAllItems()
+
+		;	createdItemREF = createPoint.placeAtMe(removedWeapon)
+            createdItemREF.SetItemHealthPercent(itemTempering)
+
 			debug.notification("weapon")
+            i = size			
+
+		elseIf(removedArmor)
             i = size
-;return true
-			
-
-		elseif(removedArmor)
-         i = size
-		    int materialLevel = getArmorMaterialLevel(removedWeapon)
+		    int materialLevel = getMaterialLevel(removedArmor, FALSE)
 			debug.notification("armor")
-			newREF = createPoint.placeAtMe(removedArmor)
-
-		endif
+			;createdItemREF = createPoint.placeAtMe(removedArmor)
+		endIf
 
 		i += 1
 	endWhile
@@ -264,10 +287,10 @@ return false
 	summonFXpoint.placeatme(summonFX);summonFX.playGamebryoAnimation("mIdle")
 	utility.wait(0.33)
 	;debug.notification(Results.getAt(i))
-newREF = createPoint.placeAtMe(Results.getAt(i))
 
-AddKeywordToRef(newREF, disallowEnchantingKeyword) 
-AddKeywordToRef(newREF, disallowSellingKeyword) 
+createdItemREF = createPoint.placeAtMe(Results.getAt(i))
+AddKeywordToRef(createdItemREF, disallowEnchantingKeyword) 
+AddKeywordToRef(createdItemREF, disallowSellingKeyword) 
 
 	; transfer any items to the offering box (just in case I had anything valuable on me!)
 	lastSummonedObject.RemoveAllItems(DropBox, FALSE, TRUE)
@@ -275,7 +298,7 @@ AddKeywordToRef(newREF, disallowSellingKeyword)
 	lastSummonedObject.delete()
 
 	; now store whatever we just created as the current/last summoned object
-	lastSummonedObject = newREF
+	lastSummonedObject = createdItemREF
 
 	int[] durations = new int[1]
 	durations[0] = 2
@@ -288,93 +311,99 @@ AddKeywordToRef(newREF, disallowSellingKeyword)
 
 
 
-	;newREF.SetEnchantment(enchantments[0], 100)
-;	enchantment e = newREF.CreateEnchantment(maxCharge, weaponEnchantments,magnitudes , areas , durations )
-;	debug.notification(newREF)
-;	debug.notification((newREF as form).HasKeyword(keywordsLevel1[0]))
+	;;;createdItemREF.SetEnchantment(enchantments[0], 100)
+	enchantment e = createdItemREF.CreateEnchantment(maxCharge, weaponEnchantments,magnitudes , areas , durations )
+;	debug.notification(createdItemREF)
+;	debug.notification((createdItemREF as form).HasKeyword(keywordsLevel1[0]))
 ;	debug.notification(weaponEnchantments[0])
 
-	if (newREF as actor) != NONE
-	(newREF as actor).startCombat(game.getPlayer())
-	endif
-
 	return TRUE
-EndFunction
+endFunction
 
-int Function getArmorMaterialLevel(Form item)
+Function setToDefaultState()
+    Enchanter.RemoveAllItems()
+endFunction
+
+Function Disenchant(Form item, Float tempering)
+    if(!(dropBox.getItemCount(briarHeart) > 0))
+        debug.notification(wrongRecipeMessage)
+        return
+    endIf
+
+    dropBox.removeItem(briarHeart, 1)
+	summonFXpoint.placeatme(summonFX);summonFX.playGamebryoAnimation("mIdle")
+	utility.wait(0.33)
+	;debug.notification(Results.getAt(i))
+
+    createdItemREF = createPoint.placeAtMe(Results.getAt(i))
+    createdItemREF.SetItemHealthPercent(itemTempering)
+endFunction
+
+int Function getMaterialLevel(Form item, bool isWeapon)
+    int minGoldValueForWeaponLevel2 = 300
+    int minGoldValueForWeaponLevel3 = 4500
     int minGoldValueForArmorLevel2 = 100
     int minGoldValueForArmorLevel3 = 1500
 
 	int i = 0
-	;int keywordsTotal = keywordsLevel1.length + keywordsLevel2.length + keywordsLevel3.length + keywordsLevel4.length
-
     int keywordCount = item.GetNumKeywords()
-	while i < keywordCount
 
-        if(keywordsArmorLevel1.HasForm(item.GetNthKeyword(i)))
-			return 0
-	    elseif(keywordsArmorLevel2.HasForm(item.GetNthKeyword(i)))
-	        return 1
-	    elseif(keywordsArmorLevel3.HasForm(item.GetNthKeyword(i)))
-	        return 2
-	    elseif(keywordsArmorLevel4.HasForm(item.GetNthKeyword(i)))
-	        return 3
-        else                   
-            ; decide by value if no keywords found
-            if(item.GetGoldValue() < minGoldValueForArmorLevel2)
+    if(isWeapon)                        ; weapon
+        while i < keywordCount
+            if(keywordsWeaponLevel1.HasForm(item.GetNthKeyword(i)))
                 return 0
-            elseif(item.GetGoldValue() < minGoldValueForArmorLevel3)   
+            elseIf(keywordsWeaponLevel2.HasForm(item.GetNthKeyword(i)))
                 return 1
-            else
+            elseIf(keywordsWeaponLevel3.HasForm(item.GetNthKeyword(i)))
                 return 2
-            endif     
-		endif
-		i += 1
-	endWhile
-EndFunction
-
-int Function getWeaponMaterialLevel(Form item)
-    int minGoldValueForWeaponLevel2 = 300
-    int minGoldValueForWeaponLevel3 = 4500
-
-	int i = 0
-	;int keywordsTotal = keywordsLevel1.length + keywordsLevel2.length + keywordsLevel3.length + keywordsLevel4.length
-
-    int keywordCount = item.GetNumKeywords()
-	while i < keywordCount
-
-        if(keywordsWeaponLevel1.HasForm(item.GetNthKeyword(i)))
-			return 0
-	    elseif(keywordsWeaponLevel2.HasForm(item.GetNthKeyword(i)))
-	        return 1
-	    elseif(keywordsWeaponLevel3.HasForm(item.GetNthKeyword(i)))
-	        return 2
-	    elseif(keywordsWeaponLevel4.HasForm(item.GetNthKeyword(i)))
-	        return 3
-        else                   
-            ; decide by value if no keywords found
-            if(item.GetGoldValue() < minGoldValueForWeaponLevel2)
+            elseIf(keywordsWeaponLevel4.HasForm(item.GetNthKeyword(i)))
+                return 3
+            else                   
+                ; decide by value if no keywords found
+                debug.notification("getWeaponMaterialLevel else")
+                if(item.GetGoldValue() < minGoldValueForWeaponLevel2)
+                    return 0
+                elseIf(item.GetGoldValue() < minGoldValueForWeaponLevel3)   
+                    return 1
+                else
+                    return 2
+                endIf  
+            endIf
+            i += 1
+        endWhile
+    else                                ; armor
+        while i < keywordCount
+            if(keywordsArmorLevel1.HasForm(item.GetNthKeyword(i)))
                 return 0
-            elseif(item.GetGoldValue() < minGoldValueForWeaponLevel3)   
+            elseIf(keywordsArmorLevel2.HasForm(item.GetNthKeyword(i)))
                 return 1
-            else
+            elseIf(keywordsArmorLevel3.HasForm(item.GetNthKeyword(i)))
                 return 2
-            endif  
-		endif
-		i += 1
-	endWhile
-EndFunction
+            elseIf(keywordsArmorLevel4.HasForm(item.GetNthKeyword(i)))
+                return 3
+            else                   
+                ; decide by value if no keywords found
+                if(item.GetGoldValue() < minGoldValueForArmorLevel2)
+                    return 0
+                elseIf(item.GetGoldValue() < minGoldValueForArmorLevel3)   
+                    return 1
+                else
+                    return 2
+                endIf     
+            endIf
+        endWhile
+    endIf
+endFunction
 
-bool Function ScanForEnchIngredients(int voidsaltsCount)
-	if (dropBox.getItemCount(blackSoulGem) >= 1 && dropBox.getItemCount(voidSalts) >= voidsaltsCount)
+bool Function ScanForEnchIngredients(int voidsaltsMinCount)
+	if (dropBox.getItemCount(blackSoulGem) >= 1 && dropBox.getItemCount(voidSalts) >= voidsaltsMinCount)
 		return TRUE
 	else
-		return false
-	EndIf
-EndFunction
+		return FALSE
+	endIf
+endFunction
 
-
-Float Function getEnchStrenght(int index, int level, bool isWeapon)
+Float Function GetEnchStrenght(int index, int level, bool isWeapon)
     float strength
     float step
 
@@ -387,31 +416,47 @@ Float Function getEnchStrenght(int index, int level, bool isWeapon)
     endif
 
 	return Utility.RandomFloat(strength * (1 - randomDifference), strength * (1 + randomDifference))
-EndFunction
+endFunction
 
-
-Function EnchantmentCheck(Form First)
-	Enchanter.EquipItem(First)
-
-	Enchantment TempEnchantmentBase = None
-	Enchantment TempEnchantmentSpecial = None
-	float ItemTempering = 0.0
+int Function EnchantmentCheck(Form First)
+	Enchantment tempEnchantmentBase = None
+	Enchantment tempEnchantmentSpecial = None
 
 	if ( First.GetType() == 41 )
-		TempEnchantmentBase = (First as Weapon).GetEnchantment()
-		TempEnchantmentSpecial = WornObject.GetEnchantment(Game.getPlayer(), 1, 0)
-		ItemTempering = WornObject.GetItemHealthPercent(Game.getPlayer(), 1, 0)
-	Else
-		TempEnchantmentBase = (First as Armor).GetEnchantment()		
+		tempEnchantmentBase = (First as Weapon).GetEnchantment()
+		tempEnchantmentSpecial = WornObject.GetEnchantment(Enchanter, 1, 0)
+	else
+		tempEnchantmentBase = (First as Armor).GetEnchantment()		
 		Int SlotMask = (First as Armor).GetSlotMask()
-		TempEnchantmentSpecial = WornObject.GetEnchantment(Game.getPlayer(), 0, SlotMask)
-		ItemTempering = WornObject.GetItemHealthPercent(Game.getPlayer(), 0, SlotMask)
-	EndIf
+		tempEnchantmentSpecial = WornObject.GetEnchantment(Enchanter, 0, SlotMask)
+	endIf
 
-	debug.notification(" TempEnchantmentBase " + TempEnchantmentBase)
-	debug.notification(" TempEnchantmentSpecial " + TempEnchantmentSpecial)
-	debug.notification(" ItemTempering " + ItemTempering)
-EndFunction
+	debug.notification(" TempEnchantmentBase " + tempEnchantmentBase)
+	debug.notification(" TempEnchantmentSpecial " + tempEnchantmentSpecial)
+
+    if(tempEnchantmentSpecial)
+        return 2
+    elseif(tempEnchantmentBase)
+        return 1
+    else
+        return 0
+    endIf
+endFunction
+
+float Function TemperingCheck(Form First)
+	float itemTempering = 1.0
+
+	if ( First.GetType() == 41 )
+		itemTempering = WornObject.GetItemHealthPercent(Enchanter, 1, 0)
+	else
+		Int SlotMask = (First as Armor).GetSlotMask()
+		itemTempering = WornObject.GetItemHealthPercent(Enchanter, 0, SlotMask)
+	endIf
+
+	debug.notification(" ItemTempering " + itemTempering)
+
+    return itemTempering
+endFunction
 
 
 ;step = (best - worst) / 3
@@ -423,6 +468,35 @@ EndFunction
 
 
 ;/
+int Function getArmorMaterialLevel(Form item)
+	int i = 0
+	;int keywordsTotal = keywordsLevel1.length + keywordsLevel2.length + keywordsLevel3.length + keywordsLevel4.length
+
+    int keywordCount = item.GetNumKeywords()
+	while i < keywordCount
+
+        if(keywordsArmorLevel1.HasForm(item.GetNthKeyword(i)))
+			return 0
+	    elseIf(keywordsArmorLevel2.HasForm(item.GetNthKeyword(i)))
+	        return 1
+	    elseIf(keywordsArmorLevel3.HasForm(item.GetNthKeyword(i)))
+	        return 2
+	    elseIf(keywordsArmorLevel4.HasForm(item.GetNthKeyword(i)))
+	        return 3
+        else                   
+            ; decide by value if no keywords found
+            if(item.GetGoldValue() < minGoldValueForArmorLevel2)
+                return 0
+            elseIf(item.GetGoldValue() < minGoldValueForArmorLevel3)   
+                return 1
+            else
+                return 2
+            endIf     
+		endIf
+		i += 1
+	endWhile
+endFunction
+
 Event OnItemAdded(Form akBaseItem, int aiItemCount, ObjectReference akItemReference, ObjectReference akSourceContainer)
 return
     debug.notification("insertedItems.length: ")
