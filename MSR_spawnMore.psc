@@ -12,23 +12,31 @@ FormList Property bonusLocations Auto
 
 Bool alreadySpawned = False
 
-FormList property listOfNPCs auto
-
 Event OnLoad()
-	string[] IgnoredNamesList = new string[4]
-	IgnoredNamesList[0] = "Yngvild Ghost"
-	IgnoredNamesList[1] = "Soul"
-	IgnoredNamesList[2] = "Subjugated Ghost"
-	IgnoredNamesList[3] = "Ghostly Adventurer"
-
 	Actor spawn = Self As Actor
-
-	If (!(IgnoredNamesList.Find(spawn.GetDisplayName()) < 0))
-	  Return
-	EndIf
 	
-	If(spawn.IsDead() || spawn.IsGhost() || alreadySpawned || spawn.GetAV("IgnoreCrippledLimbs") == -1 || spawn.IsCommandedActor() == 1 || !spawn.IsHostileToActor(Game.GetPlayer()))
+	If(alreadySpawned || spawn.IsDead() || spawn.IsGhost() || spawn.GetActorValue("IgnoreCrippledLimbs") == -1 || spawn.IsCommandedActor() == 1)
+		alreadySpawned = True
 		Return
+	EndIf
+
+	string[] ignoredNamesList = new string[4]
+	ignoredNamesList[0] = "Yngvild Ghost"
+	ignoredNamesList[1] = "Soul"
+	ignoredNamesList[2] = "Subjugated Ghost"
+	ignoredNamesList[3] = "Ghostly Adventurer"
+
+	string spawnName = spawn.GetDisplayName()
+
+	If (!(ignoredNamesList.Find(spawnName) < 0))
+		alreadySpawned = True
+	  	Return
+	EndIf
+
+	; Dustman's Cairn check
+	If (spawnName == "Silver Hand" && !spawn.IsHostileToActor(Game.GetPlayer()))
+		alreadySpawned = True
+	  	Return
 	EndIf
 
 	spawnExtras(spawn, spawnNPC)
@@ -36,12 +44,6 @@ Event OnLoad()
 EndEvent
 
 Function SpawnExtras(Actor oldSpawnRef, ActorBase toSpawn)
-	string[] ToRenameNamesList = new string[4]
-	ToRenameNamesList[0] = "Silver Hand"
-	ToRenameNamesList[1] = "Corsair"
-	ToRenameNamesList[2] = "Blood Horker"
-	ToRenameNamesList[3] = "Blackblood Marauder"
-
 	ActorBase finalSpawn = toSpawn
 	Bool isHardLocation = False
 
@@ -52,12 +54,22 @@ Function SpawnExtras(Actor oldSpawnRef, ActorBase toSpawn)
 		isHardLocation = True
 	EndIf
 	
-	Int numSpawns = getSpawnNum(isHardLocation) As Int
+	Int numSpawns = getSpawnNum(isHardLocation)
 	;Debug.Notification("numSpawns: " + numSpawns)
 	;Debug.Notification("GetDisplayName(): " + oldSpawnRef.GetDisplayName())
+
+	If(numSpawns == 0)
+		Return
+	EndIf
 	
 	Faction[] oldFactions = oldSpawnRef.GetFactions(-128, 127)
 	
+	string[] toRenameNamesList = new string[4]
+	toRenameNamesList[0] = "Silver Hand"
+	toRenameNamesList[1] = "Corsair"
+	toRenameNamesList[2] = "Blood Horker"
+	toRenameNamesList[3] = "Blackblood Marauder"
+
 	Int i = 0
 	While(i < numSpawns)
 		Wait(0.1)
@@ -66,7 +78,7 @@ Function SpawnExtras(Actor oldSpawnRef, ActorBase toSpawn)
 		newSpawn.SetAV("IgnoreCrippledLimbs", -1)
 		newSpawn.AddToFaction(oldFactions[0])
 
-		If (!(ToRenameNamesList.Find(oldSpawnRef.GetDisplayName()) < 0))
+		If (!(toRenameNamesList.Find(oldSpawnRef.GetDisplayName()) < 0))
 			newSpawn.SetDisplayName(oldSpawnRef.GetDisplayName())
 		EndIf
 
