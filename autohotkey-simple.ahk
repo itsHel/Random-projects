@@ -88,7 +88,7 @@ XButton1::del
 XButton2::Home
 NumpadEnter::tab
 
-;$!c::send,console.log()`;{left}{left}
+$!c::send,console.log()`{left}
 ;sendinput
 ;!NumpadMult::sendplay,`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*{Space 2}`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*`*{Left 52}
 
@@ -340,6 +340,7 @@ zapisc:
 		sleep 50
 		sendinput,^v
 		return
+	$!v::send,debug.notification()`{left}
 }#IfWinActive
 
 #ifWinactive ahk_class mintty						;gitbash
