@@ -85,6 +85,8 @@ String wrongRecipeMessage = "This recipe doesn't seem to be valid..."
 ;   - special weapon enchs no autocalc + cost to 0
 ;			-* banish daedra		60 80 100			- chech helltweaks for values
 ;			-* banish undead		15 20 30 35			- chech helltweaks for values
+;   - bit better lvl0 enchs
+;   - MUST RETURN REAL ITEM
 
 state busy
     event onActivate(objectReference actronaut)
@@ -226,6 +228,7 @@ bool function ScanForEnchantments(formlist recipes, formList results)
     objectReference createdItemREF
     int randomEnchIndex
     int enchDuration
+    int materialLevel
     float itemTempering
     float enchStrength
     form removedItem
@@ -247,7 +250,7 @@ bool function ScanForEnchantments(formlist recipes, formList results)
             
 			randomEnchIndex = utility.randomInt(0, weaponEnchantmentsWeak.getSize() - 1)
 
-			int materialLevel = getMaterialLevel(removedWeapon, TRUE)
+			materialLevel = getMaterialLevel(removedWeapon, TRUE)
             int voidSaltsNeeded = materialLevel + 1
 
 			enchStrength = getEnchStrenght(randomEnchIndex, materialLevel, TRUE)
@@ -272,7 +275,7 @@ bool function ScanForEnchantments(formlist recipes, formList results)
             elseif(itemOldEnchantment == 2)
                 debug.notification("2 - has player made enchantment")
                 disenchant(removedWeapon, itemTempering)
-                setToDefaultState()
+             ;   setToDefaultState()
                 return TRUE
             endIf
             debug.notification("0 - isnt enchanted")
@@ -291,7 +294,7 @@ bool function ScanForEnchantments(formlist recipes, formList results)
             removedItem = removedArmor
 
             i = size
-		    int materialLevel = getMaterialLevel(removedArmor, FALSE)
+		    materialLevel = getMaterialLevel(removedArmor, FALSE)
 			debug.notification("armor")
 		endIf
 
@@ -391,6 +394,8 @@ endFunction
 
 function disenchant(form item, float tempering)
     if(!(dropBox.getItemCount(briarHeart) > 0))
+
+        debug.notification(dropBox.getItemCount(briarHeart))        ; IS NULA
         debug.notification(wrongRecipeMessage)
         return
     endIf
@@ -539,7 +544,7 @@ float function temperingCheck(form item)
     return itemTempering
 endFunction
 
-function getBonusDamageStrength(magicEffect damageEffect, int materialLevel)
+float function getBonusDamageStrength(magicEffect damageEffect, int materialLevel)
     float strength
 
     if(damageEffect == banishDamageMgef)
@@ -548,10 +553,10 @@ function getBonusDamageStrength(magicEffect damageEffect, int materialLevel)
         strength = 16 + 9 * materialLevel           ; turnUndeadDamageMgef
     endIf
 
-    return utility.randomFloat( * (1 - randomDifference), strength * (1 + randomDifference))
+    return utility.randomFloat(strength * (1 - randomDifference), strength * (1 + randomDifference))
 endFunction
 
-function getArmorType(form item)
+string function getArmorType(form item)
     if(item.hasKeyword(armorKeywords[0]))
         return "helm"
     elseIf(item.hasKeyword(armorKeywords[1]))
@@ -570,4 +575,3 @@ endFunction
 function createArmorEnchantment(objectReference itemRef, int materialLevel, string armorType)
 
 endFunction
-
