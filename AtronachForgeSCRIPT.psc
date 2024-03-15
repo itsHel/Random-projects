@@ -77,16 +77,18 @@ String wrongRecipeMessage = "This recipe doesn't seem to be valid..."
 ; 000CE734
 	
 ;	-? check if no ingredient		- item isnt returned
-;	-? check if disenchanting		- not working
+;	-? check if disenchanting		- item isnt returned
 ;	- armor
 ;	-* maxcharge calc    1500+
 ;	-* special weapon enchs
-;   - special weapon enchs duration 0 OR 1
-;   - special weapon enchs no autocalc + cost to 0
 ;			-* banish daedra		60 80 100			- chech helltweaks for values
 ;			-* banish undead		15 20 30 35			- chech helltweaks for values
 ;   - bit better lvl0 enchs
-;   - MUST RETURN REAL ITEM
+;   - MUST RETURN REAL ITEM not form
+
+;   - special weapon enchs no autocalc + cost to 0
+;   - special weapon enchs duration 0 OR 1
+;   - briarheart not working
 
 state busy
     event onActivate(objectReference actronaut)
@@ -269,7 +271,9 @@ bool function ScanForEnchantments(formlist recipes, formList results)
 
             if(itemOldEnchantment == 1)
                 debug.notification("1 - has base enchantment")
-                enchanter.RemoveItem(removedWeapon, 1, TRUE, dropBox)
+Form ItemToRemove = Enchanter.GetNthForm(0)
+enchanter.RemoveItem(removedWeapon, 1, false, Game.GetPlayer())
+                ;enchanter.RemoveItem(removedWeapon, 1, TRUE, dropBox)
                 debug.notification(wrongRecipeMessage)
                 return FALSE
             elseif(itemOldEnchantment == 2)
@@ -282,7 +286,9 @@ bool function ScanForEnchantments(formlist recipes, formList results)
 
             bool ingredientsMatch = ScanAndRemoveEnchIngredients(voidSaltsNeeded)
             if(!ingredientsMatch)
-                enchanter.RemoveItem(removedWeapon, 1, TRUE, dropBox)
+Form ItemToRemove = Enchanter.GetNthForm(0)
+enchanter.RemoveItem(removedWeapon, 1, false, Game.GetPlayer())
+                ;enchanter.RemoveItem(removedWeapon, 1, TRUE, dropBox)
                 debug.notification(wrongRecipeMessage)
                 return FALSE
             endIf
@@ -575,3 +581,9 @@ endFunction
 function createArmorEnchantment(objectReference itemRef, int materialLevel, string armorType)
 
 endFunction
+
+meme aday
+bunda
+masticka
+homerpfp
+Anna is faced with uncertainty about what to do next, In her song "The Next Right Thing", she reaches the realization that when faced with uncertainty, one must simply focus on doing "The Next Right Thing."
