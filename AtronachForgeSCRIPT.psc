@@ -41,17 +41,35 @@ Formlist property weaponEnchantmentsBest auto
 ; 3 - soul trap
 ; 4 - paralyze
 ; 5 - fear
-; 6 - fear
-; 7 - stamina absorb
-; 8 - magicka absorb
-; 9 - health absorb
+; 6 - stamina absorb
+; 7 - magicka absorb
+; 8 - health absorb
+; 9 - chaos damage
 ; 10 - banish
 ; 11 - turn undead
 
-Formlist property armorEnchantmentsWeak auto
-Formlist property armorEnchantmentsBest auto
+Formlist property helmEnchantmentsWeak auto
+Formlist property helmEnchantmentsBest auto
+Formlist property gauntletsEnchantmentsWeak auto
+Formlist property gauntletsEnchantmentsBest auto
+Formlist property cuirassEnchantmentsWeak auto
+Formlist property cuirassEnchantmentsBest auto
+Formlist property bootsEnchantmentsWeak auto
+Formlist property bootsEnchantmentsBest auto
+Formlist property shieldEnchantmentsWeak auto
+Formlist property shieldEnchantmentsBest auto
 Formlist property armorEnchantmentsSpecialWeak auto
 Formlist property armorEnchantmentsSpecialBest auto
+; 0 - fortify onehanded
+; 1 - fortify twohanded
+; 2 - fortify conjuration
+; 3 - fortify destruction
+; 4 - fortify illusion
+; 5 - fortify restoration
+; 6 - fortify alteration
+; 7 - resist fire
+; 8 - resist shock
+; 9 - resist frost
 
 MagicEffect property banishDamageMgef auto
 MagicEffect property turnUndeadDamageMgef auto
@@ -76,19 +94,23 @@ String wrongRecipeMessage = "This recipe doesn't seem to be valid..."
 
 ; 000CE734
 	
-;	-? check if no ingredient		- item isnt returned
-;	-? check if disenchanting		- item isnt returned
+;	-* check if no ingredient		- item isnt returned
+;	-* check if disenchanting		- item isnt returned
 ;	- armor
 ;	-* maxcharge calc    1500+
 ;	-* special weapon enchs
 ;			-* banish daedra		60 80 100			- chech helltweaks for values
 ;			-* banish undead		15 20 30 35			- chech helltweaks for values
-;   - bit better lvl0 enchs
-;   - MUST RETURN REAL ITEM not form
 
+;   - bit better lvl0 enchs
 ;   - special weapon enchs no autocalc + cost to 0
 ;   - special weapon enchs duration 0 OR 1
 ;   - briarheart not working
+;   - disenchanting - check if has keyword no disench
+;   - check multiple items
+;   - Bool SetDisplayName(Actor akActor, Int handSlot, Int slotMask, String name, Bool forced)
+;   - poison
+
 
 state busy
     event onActivate(objectReference actronaut)
@@ -119,6 +141,7 @@ auto state ready
             ScanForEnchantments(RecipeList, ResultList)
         endIf
 
+        setToDefaultState()
 
         gotoState("ready")
     endEvent
@@ -248,7 +271,7 @@ bool function ScanForEnchantments(formlist recipes, formList results)
 		if(removedWeapon)
             removedItem = removedWeapon
 
-            dropBox.removeItem(removedWeapon, 1, TRUE, enchanter as actor)
+            dropBox.removeItem(removedWeapon, 1, TRUE, enchanter )
             
 			randomEnchIndex = utility.randomInt(0, weaponEnchantmentsWeak.getSize() - 1)
 
@@ -265,29 +288,44 @@ bool function ScanForEnchantments(formlist recipes, formList results)
     		;debug.notification("ingredientsMatch " + ingredientsMatch)
 
             enchanter.equipItem(removedWeapon)
+            utility.wait(0.1)
+            if(enchanter.wornHasKeyword(disallowEnchantingKeyword))
+                enchanter.RemoveItem(removedWeapon, 1, false, dropBox)
+                debug.notification(wrongRecipeMessage)
+                return false
+            endIf
+            
             ; 0 - isnt enchanted, 1 - has base enchantment, 2 - has player made enchantment
             itemTempering = temperingCheck(removedWeapon)
             int itemOldEnchantment = enchantmentCheck(removedWeapon)
 
             if(itemOldEnchantment == 1)
                 debug.notification("1 - has base enchantment")
-Form ItemToRemove = Enchanter.GetNthForm(0)
-enchanter.RemoveItem(removedWeapon, 1, false, Game.GetPlayer())
+;Form ItemToRemove = Enchanter.GetNthForm(0)
+                enchanter.RemoveItem(removedWeapon, 1, false, dropBox)
                 ;enchanter.RemoveItem(removedWeapon, 1, TRUE, dropBox)
                 debug.notification(wrongRecipeMessage)
                 return FALSE
             elseif(itemOldEnchantment == 2)
                 debug.notification("2 - has player made enchantment")
-                disenchant(removedWeapon, itemTempering)
-             ;   setToDefaultState()
-                return TRUE
+                if(dropBox.getItemCount(briarHeart) > 0 || true)        ; TEMP
+                    dropBox.removeItem(briarHeart, 1)
+                    disenchant(removedWeapon, itemTempering)
+                    return TRUE
+                else
+                    enchanter.RemoveItem(removedItem, 1, false, dropBox)
+                    debug.notification(wrongRecipeMessage)
+                    return FALSE
+                endIf
+                ;enchanter.RemoveItem(removedWeapon, 1, false, Game.GetPlayer())
+               ; disenchant(removedWeapon, itemTempering)
+                ;setToDefaultState()
             endIf
             debug.notification("0 - isnt enchanted")
 
             bool ingredientsMatch = ScanAndRemoveEnchIngredients(voidSaltsNeeded)
             if(!ingredientsMatch)
-Form ItemToRemove = Enchanter.GetNthForm(0)
-enchanter.RemoveItem(removedWeapon, 1, false, Game.GetPlayer())
+                enchanter.RemoveItem(removedWeapon, 1, false, dropBox)
                 ;enchanter.RemoveItem(removedWeapon, 1, TRUE, dropBox)
                 debug.notification(wrongRecipeMessage)
                 return FALSE
@@ -321,6 +359,7 @@ enchanter.RemoveItem(removedWeapon, 1, false, Game.GetPlayer())
         ;debug.notification(Results.getAt(i))
 
         ;createdItemREF = createPoint.placeAtMe(Results.getAt(i))
+        utility.wait(0.1)
         AddKeywordToRef(createdItemREF, disallowEnchantingKeyword) 
         AddKeywordToRef(createdItemREF, disallowSellingKeyword) 
 
@@ -386,10 +425,10 @@ enchanter.RemoveItem(removedWeapon, 1, false, Game.GetPlayer())
     ;	debug.notification((createdItemREF as form).HasKeyword(keywordsLevel1[0]))
     ;	debug.notification(weaponEnchantments[0])
 
-        setToDefaultState()
+        ;setToDefaultState()
         return TRUE
     else
-        setToDefaultState()
+        ;setToDefaultState()
 	    return FALSE
     endIf
 endFunction
@@ -399,20 +438,9 @@ function setToDefaultState()
 endFunction
 
 function disenchant(form item, float tempering)
-    if(!(dropBox.getItemCount(briarHeart) > 0))
-
-        debug.notification(dropBox.getItemCount(briarHeart))        ; IS NULA
-        debug.notification(wrongRecipeMessage)
-        return
-    endIf
-
-    dropBox.removeItem(briarHeart, 1)
 	summonFXpoint.placeAtMe(summonFX);summonFX.playGamebryoAnimation("mIdle")
 	utility.wait(0.33)
-	;debug.notification(Results.getAt(i))
 
-debug.notification("item")
-debug.notification(item)
     objectReference createdItemREF = createPoint.placeAtMe(item)
     createdItemREF.setItemHealthPercent(tempering)
 endFunction
@@ -582,8 +610,3 @@ function createArmorEnchantment(objectReference itemRef, int materialLevel, stri
 
 endFunction
 
-meme aday
-bunda
-masticka
-homerpfp
-Anna is faced with uncertainty about what to do next, In her song "The Next Right Thing", she reaches the realization that when faced with uncertainty, one must simply focus on doing "The Next Right Thing."

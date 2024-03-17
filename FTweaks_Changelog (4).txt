@@ -1,0 +1,266 @@
+4.2 - Huge Thanks to Orrie, Ghoul, Veggie, and B00lean for the countless things they've helped with
+
+New soft requirement: Papyrus MessageBox - SKSE NG (https://www.nexusmods.com/skyrimspecialedition/mods/83578)
+- Required to enable the progressive insight system described below (No reason to not download!)
+
+Bug fixes:
+- Fixed issue with spirit dragonpriest visuals (Thanks Brandos)
+- Fixed issues with several NPCs (including those from Fozar's Dragonborn) not appearing
+- Fixed unintended high damage when bashing with a torch
+- Scroll of funerary rite rank 2 functions as described now
+- Forwarded proper values and keywords to skeleton race
+- Fixed various dialogue and class information not aligned with training changes made previously
+- Removed daedra hearts in construction recipe of dark and golden weapons and armor
+- Fixed improper recipe requirements for some amber items
+- Prevented non-humanoid draugr enemies from spawning in coffins in Dustmans Cairn
+- Moved Knight-Paladin Greatsword a bit so it doesn't fall down
+- Fixed vendor prices on undying breath enchanted items
+- Fixed bug with tier 6 fire enchants
+- Several more items were given "disallow enchanting" keyword
+- Fixed issue with Sheogorath Blessing's and Aetherial Crown's stronger potions
+- Fixed issue with Lover stone longer potion durations
+- Fixed issue with Chemist's Effigy stronger potions made
+- Sun damage now has a proper enchant shader, which fixed noise issue with sun enchantments
+- Soul trap oil should work now
+- Fixed missing conditions on several poison effects
+- Standardized poison resist conditions
+- Added proper projectiles and impact data for grasp spells that were missing them
+- Fixed description bug with several staff channeling effects
+- Fixed incorrect descriptions of invoke elemental summons
+- Standardized armor trait effects so that they can work for NPCs
+- Fixed bug with telekinetic sandstorm not working
+- Fixed incorrect casting type for several wind spells
+- Added ISM to several swarm spells so you know you're getting hit
+- Featherfall duration now scales properly
+- Fixed issue with strength of Alto Wine and Aged Alto Wine effect
+- Removed splinter spell from NPCs
+- Gave some NPCs missing combat styles
+- Fixed incorrect description of several abyssal spells
+- Removed magic skill from Magnus' ward
+- Fixed incorrect magic effect for Peryite's Ataxia
+- Infusions now work correctly when used with a ranged weapons
+- Fixed several issues with Arcane Disjunction spells
+- Removed hazard object from NPC version of Telekinetic Boulder
+- Snow Elf race, DLC1Nord race, and dremora race records given proper attack data
+- Fixed speed of Dark and Golden bows
+- Fixed bug with Arcanist's Effigy preventing it from working
+- Fixed bug with clandestine magic perk
+- Replaced several soldiers outfits with more complete versions
+- Fixed bug with Companion's Insight black book reward and self-targeted shouts
+- Replaced several imperial weapons on NPCs with other weapon types to prevent unnecessary aggression
+- Fixed some issues with arcane dysjunction spells
+- Ebony blade: fixed the new effect to reflect the item description and absorbs poison resist instead of damaging poison resist, removed some redundant red/health effects that were applied twice and added green beam visual effect
+- Made Augmentation instructions message clearer
+- Dragon priests on Solsthiem have much better AI and will be more of a threat as intended
+- Added proper combat styles to Miraak's cultists
+- Fixed thane quests to give proper reward messages
+- Azura's blessing properly removes its effects once removing the blessing
+- NPC wards behave like player wards now
+- Daedric ranged weapons now apply the bonus damage to daedra instead of the arrows
+- Added charge time to mage armor on target
+- Fixed bug with arcane discharge rank 
+- Fixed issue with shadow cloak dispel
+- AOE infusion damage fixed
+- Fixed displayed messages from reading Evethra's Journal
+- Fixed rare bug in destroy wooden weapon script that might remove breakable item from target's inventory instead of target's hands if there is a same item in the target's inventory (player experiences this situation as if weapon was not destroyed).
+- Droops now has a percent chance of being acquired, like other diseases
+- Fixed issues with ritual exsanguination
+- Fixed issue with poisons not applying while enemies attack
+- Fixed script issue for Storm of Steel perk
+- Implemented a better stamina drain for bows
+- Fixed incorrect conditions lowering spell strength
+- Fixed bug with orc increased stamina costs for bows
+- Fixed weapon traits for orcish bows
+- Prevented several power attacks from working when at 0 stamina
+
+New additions
+- New spell available from special loot only: Telekinetic Stride
+- Added enchanted Akaviri armor to the Skyhaven Temple chest
+- Imbued Torso item placed in Forebear's Holdout
+- Ancient Barbarian light armor set placed throughout various Riekling dungeons on Solsthiem
+- Reachcliff Cave boss enemies are overhauled and has a few surprises in store
+- Smothered Ashen Shield added to Highpoint Tower
+- Added Cleric's Boots to Orchendor
+- New High-Cultist light armor set (boots, gauntlets, cuirass) added as a reward for defeating Vahlok the Jailor
+- New Thalmor Cuirass added as a possible chest piece for Justicars
+- New Justiciar Cuirass worn by Estormo
+- New enchanted Chainmail armor given to *new* Pinewatch boss, Rigel Strong-Arm
+
+Leveling Revamp (done by Orrie):
+- The current leveling system based on skill cost tiers (0-25,etc) limits players choices for points distribution. The new system removes tiers and uses smoohter linear or a progressive (scaling) approach. 
+- New skill cost in default settings is based on the current skill level, for example leveling evasion from 20 to 21 will cost 20 skill points, getting skill from 99 to 100 will cost 99 skill points. To offset the new costs we trippled the amount of points that you get from one insight potion.
+- The MCM settings are replaced with checkbox to select progressive instead of linear (default) system. The cost multiplier can be used to tweak the costs further. 
+- Increase Skill message box (where you increase the skills) in-game has also been changed to display current costs for each skill (the game will switch to the new display format only if you changed cost multiplier from default value of 1.0 or if progressive cost system was enabled). 
+
+Block changes (done by Orrie):
+- Tidied up block perk tree
+- Powerful Bashes perk: requirement lowered to skill level 20 (from 25). Bashing with the shileld with fire/frost/shock/magic resistance enchantment now damages target with element type inherited from the shields resistance (damage is 0.15 * element resist magnitude over 3 seconds)
+- Overpowering Bashes perk: requirement lowered to skill level 40 (from 50). Blocking physical damage with shield with fire/frost/shock/magic resistance enchantment now charges energy into the shield, using powerbash will release the stored energy (damage is 2 * element resist magnitude)
+- Disarming Bashes perk: requirement lowered to skill level 65 (from 75). Charging enery into the shield with fire/frost/shock/magic resistance enchantment requires less damage blocked and released energy has more damage and damages enemies near player (damage is 3 * element resist magnitude,  block charge threshold lowered by 33%)
+- If shield has more resistances only the first one is used for elemental bashing mechanic, elemental damage scales with block skill (1 + block * 0.025)
+
+Evasion changes (done by B00lean and Antix):
+- Meteoric Reflexes perk changed to take 50% less melee damage while above 50% of your total stamina
+- Combat Reflexes perk additionally makes dodging cost 50% less stamina
+- Finesse perk additionally grants the following: increased damage dealt with bows or crossbows by 15% when not moving and not sneaking. Dodging grants +25% increased ranged damage reduction for 2 seconds
+- Dexterity perk changed to power attacking and drawing a bow cost 25% less stamina
+- Agile Spellcasting perk additionally makes spells 8% stronger while running
+- Vexing Flanker perk changed to: while not wearing a heavy cuirass, melee attacks do 10 and/or 20% more damage if you are running or sprinting and/or attack from behind the enemy. You can shoot ranged weapons 15% faster when running. Dodging grants 10% increased armour penetration for 2 seconds. Immunity to kill moves
+
+Archery changes (done by B00lean):
+- Enchanted ammunition now cause secondary effects
+- New Ammunition Specialist perk: Reduces weight of carried arrows and bolts by 50% and increases elemental damage dealt with explosive ammo by 33%. Gain a chance to freeze enemies, or to make them flee from combat, or to stagger them with frost/fire/shock ammo respectively. The likelihood of success depends on the strength of the enchanted ammunition.
+- Lowered movement speed buff of Hunting Stride slightly
+- Ranger perk now additionally grants 50% resistance to stagger and 10% movement speed while aiming a heavy bow or a heavy crossbow
+- Stunning Precision perk additionally allows shots tognore 15% of armor on targets that have 800 or more armor rating
+- Ranged Combat Training perk lowered to 10% bonus damage
+- Eagle eye perk additionally grants 15% more damage with bows or crossbows to staggered, unconsious or incapacitated targets.
+- Marksman's Focus perk changed to have varying slow time effects depending on your current stamina percentage left
+
+Dexterity changes (done by Benny)
+- Fingertip grip perk removed
+- Removed "Knife Dance" perks
+- Akimbo Attacks perk: now requires skill 30 (from 35), connects to the initial perk, attack speed debuff changed to -20% movement speed while attacking with two weapons out
+- Akimbo Power Attacks perk: now requires skill 70 (from 75)
+- Added new perk "Dual Savagery" at skill 90, removes the slowdown penalty from DW attacking and reduces DW PA stamina cost by 50% (like the old Storm of Steel perk)
+- Precise Strikes perk rank 1: now requires skill 50 (from 25), connects to akimbo attacks, gives 5/10 AP (instead of 7.5/10 AP)
+- Precise Strikes perk rank 2: now requires skill 80 (from 70)
+- Efficient Drawing perk ranks 1 and 2: renamed "fast hands", added the old "Knife Dance" perk effect to these perks
+- Fast Hands perk rank 2: reduces damage from incoming arrows and bolts by 80% if the attacker is far enough away and you are not attacking, to simulate deflecting or catching the projectile
+
+Werewolf perk tree changes (done by Ghoul):
+- Bestial Strength perks give damage, armor rating, and movement speed with each rank
+- Totem of the Hunter allows power attacks to hit multiple targets in front of you
+- Totem of the Predator gives 25% armor penetration
+- Totem of Ice brothers gives 50% frost resistance and protection from slow effects
+- Totem of the Moon gives 25% magic resist
+- Gorging allows werewolf feed to restore magicka in addition to extra health 
+
+Lockpicking changes:
+- Sophisticated Lockpicking perk additionally grants 10 carry weight
+- Advanced Lockpicking perk additionally grants 15 carry weight
+- Masterly Lockpicking perk additionally grants 20 carry weight
+- Cheap Tricks perk additionally grants 20 carry weight
+- Treasure Hunter perk additionally grants 30 carry weight
+
+Armor Trait changes:
+- Aetherium armor: melee attacks deal 8% less damage per piece
+- Amber armor: buffed to 7% per piece
+- Ancient shrouded armor: move 3% quicker and but take twice that much additional physical damage when struck per piece
+- Blackguard's armor: fortify sneak 15% per piece
+- Bonemold armor: buffed to 7% per piece
+- Chainmail armor: while moving, melee attacks deal 5% less damage per piece
+- Dark armor: buffed to 7% per piece
+- Dragonplate armor: Self-beneficial shouts are 25% stronger and 10% less damage from shouts per piece. Immune to Unrelenting Force when wearing at least 3 pieces
+- Dragonscale armor: 10% less damage from shouts and shouts are 10% stronger per piece. Immune to Unrelenting Force when wearing at least 4 pieces
+- Dwarven armor: increases fire resistance by 7% per piece
+- Ebony armor: all physical attacks deal 5% less damage per piece
+- Falmer armor (lighter variant): 12% poison resistance per piece
+- Forsworn armor: buffed to 7% 
+- Fur armor: buffed to 5% per piece
+- Glass armor: spells are 5% stronger per piece
+- Hammerfell armor: buffed to 7% per piece
+- Heavy falmer armor: 20% poison resistance per piece
+- Heavy imperial armor: buffed to 9% per piece
+- Imperial armor: buffed to 7% per piece
+- Iron armor: buffed to 7% per piece
+- Linwe's armor: 25% less stamina when moving while sneaking per piece
+- Nightingale armor: 2% quicker and 2% more magic resist per piece
+- Orcish armor: buffed to 9% per piece
+- Paladin armor: buffed to 9% per piece
+- Penitus armor: buffed to 6% per piece
+- Scale armor: while moving, you take 5% less damage from offensive spells per piece
+- Shrouded armor: 20% less stamina when moving while sneaking per piece
+- Skaal armor: buffed to 10% per piece
+- Steel armor: 4% less damage from melee attacks per piece
+- Steel plate: melee attacks deal 6% less damage per piece
+- Stonefire armor: 12% fire and -6% frost resistance per piece
+- Stormcloak armor: buffed to 7% per piece
+- Thieves Guild armor: fortify sneak 10% per piece
+- Thieves Guild Master armor: fortify sneak 20% per piece
+- Ulfric's armor: buffed to 20% per piece
+- Vampire armor: buffed to 7% per piece
+- Vigilant armor: buffed to 7% per piece
+- Warmage armor: buffed to 7% per piece
+
+Blessing changes:
+- Azura additionally grants 15% alteration cost reduction
+- Buffed Vile's capstone to 25% conjuration cost reduction
+- Buffed Dibella's scaling illusion cost reduction to 25%
+- Julianos' scaling boon changed to up to 100 magicka if a novice/apprentice/adept/expert/master perk in any school of magic is taken
+- Julianos' capstone additionally increased weapon enchantment and infusion strength by 50%
+- Lowered Mephala's capstone weakness to poison effect when using swords slightly
+- Nocturnal scaling boon changed to up to 5 extra lockpicking expertise scaling with up to 15 quests completed for the Thieves Guild
+- Changed Sanguine's blessing to look for the longer beneficial skooma effects being active, not the shorter durations
+- Stendarr's capstone gives an additional 35% absorb resist
+- Stendarr's stamina bonuses increased to 20/40/60/80/100
+- Syrabane stronger illusion spells is now a starting boon
+- Syrabane stronger spells is now 15% and the capstone
+- Blessing of Zenithar's capstone also gives 5% augmentation boost
+
+NPC changes:
+- Slightly edited Sinding's combat style
+- Alain Dufont will now help his bandit allies
+- Magic-using Afflicted can drop mage gear
+- Astrid is marginally more challenging to fight in the Abandoned Shack
+- Lowered Ancano's magic resist
+- Lowered number of summons Ancano can manage
+- Added more variey to the potential Imperial Soldier spawns
+- Spirit Dragon priests have access to a greater variety of spells
+- Kematu takes less damage while out of combat
+- Falas Selvayn wears heavy chitin armor
+- Raised carry weight of the Dremora Butler
+- Netch leather distributed to some bandits on Solsthiem
+- Vahlok and the Acolyte Dragon Priests have been overhauled with new spells and encounter designs
+-! Silvia is now a worthy combat opponent and drops a mysterious chest
+-! Overhauled the Charmed Vigilants in Ruunvald
+-! Lowered Dragon Priest resistance to fire
+
+Spell changes:		***********************************************************************
+- Summonable elementals resist their element and poison by 100%
+- Summonable elementals will behave cowardly in combat
+- Elemental binding perk now affects scroll summons
+-! Telekinetic spells that lower armor rating now do less damage but decrease armor rating by more
+- Heal self rank 4 is now a master spell
+- Lowered damage from telekinetic cloak
+- Invoke Darkness: name changed to Invoke Shadows, costs 50 magicka to use, and causes a hit shader on an enemy while the effect is active
+- Removed health cost of Invoke Invisibility
+- Blood spells are resisted by magic
+- Elemental grasp spells now also lower the target resistance to that element for a short time
+- Dragonskin spell is no longer concentration
+- Call of Valor now summons 1/2/3 NPCs depending on the tier used
+
+Weapon and Armor changes:
+-! Dwarven armor weighs less
+-! Scaled armor weighs less
+-! Ancient falmer armor moved to Tolvald's cave
+- Templar armor set moved to a different chest in the same dungeon
+-! Buffed improved versions of the Thieves' Guild armor enchantments
+- Buffed enchantment on High Priest Robes
+- Changed enchantment on High Priest Boots
+- Buffed enchantments on Cleric's set
+- Lowered weight of Cleric's Robes
+- Verulus's amulet of arkay got the same treatment as Andurs
+- Silver-blood family ring now has a fortify smithing enchant
+- Buffed enchantment strength on the "of the old gods" armor pieces
+- Lowered weight of Stonefire set
+- Nordic Bow and Crossbow weight lowered
+-! Ash bow given a unique enchantment
+- Grey prince's mace instead now temporarily absorbs movement speed for a duration
+
+Misc changes:
+-! Buffed mammoth cheese bowl effect
+-! Increased quantity of variant bestial stews made
+- Increased quantity of bombs made
+- Removed or moved several items in the Abandoned Shack
+- Added conditions to several effects that lower magic resistance to not lower them substantially below 0
+- Ancient knowledge additionally boosts augmentation by 5%
+- Lord stone armor bonus changed to the following: worn armor contributes 33% less penalty for wearing armor to all stamina and spell costs, movement speed and noise
+- Lowered bosmer bow stamina cost reduction to 10%
+-! NPCs use less stamina when power attacking
+- Lowered stamina costs for bows
+- Unique peerless items sold from vendors cost a bit less
+-! Falas Selvayn has more items to sell and now also sells the Ash Bow and Glass Bow of the Stag Prince
+- Replaced some dead bandits on Solsthiem with a different variant
+
+
