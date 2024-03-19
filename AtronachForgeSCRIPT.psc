@@ -95,29 +95,15 @@ String nonEnchantableMessage = "This item cannot be enchanted..."
 String namePrefix = "Blighted "
 
 ; 000CE734
-	
-;	-* check if no ingredient		- item isnt returned
-;	-* check if disenchanting		- item isnt returned
-;	-* maxcharge calc    1500+
-;	-* special weapon enchs
-;			-* banish daedra		60 80 100			- chech helltweaks for values
-;			-* banish undead		15 20 30 35			- chech helltweaks for values
 
-;   - xEdit
-;       - bit better lvl0 enchs
-;       - special weapon enchs no autocalc + cost to 0
-;       - special weapon enchs duration 0 OR 1
-;       - poison - check/create own 35%
-;       - check persistent quest items handplaced - mercers sword, light of dawn, ebony blade,ftweaks
 ;   - test multiple items
 
 ;   -* Bool SetDisplayName(Actor akActor, Int handSlot, Int slotMask, String name, Bool forced)        blighted cursed jinxed
 ;   -* combine weapon + armor code
 ;   -* move item
 
+;   - durations to 1 and check ftweaks
 ;   - return item if nonEnchantable or warn? - ask          ObjectReference Function DropObject(Form akObject, int aiCount = 1) native      + ask
-;	-* armor
-;   -* fail
 
 state busy
     event onActivate(objectReference actronaut)
