@@ -98,11 +98,8 @@ String namePrefix = "Blighted "
 
 ;   - test multiple items
 
-;   -* Bool SetDisplayName(Actor akActor, Int handSlot, Int slotMask, String name, Bool forced)        blighted cursed jinxed
-;   -* combine weapon + armor code
-;   -* move item
-
-;   - durations to 1 and check ftweaks
+;   - durations to 1 - absorbs, element damages - test ingame charges, banish dmg/turn dmg,
+;   - take duration 0 or 1 from mgef
 ;   - return item if nonEnchantable or warn? - ask          ObjectReference Function DropObject(Form akObject, int aiCount = 1) native      + ask
 
 state busy
