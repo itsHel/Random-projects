@@ -2,23 +2,26 @@
 <html>
     <head>
         <title>Scroller</title>
-        <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><path fill="rgb(221, 46, 68)" d="M35.885 11.833c0-5.45-4.418-9.868-9.867-9.868-3.308 0-6.227 1.633-8.018 4.129-1.791-2.496-4.71-4.129-8.017-4.129-5.45 0-9.868 4.417-9.868 9.868 0 .772.098 1.52.266 2.241C1.751 22.587 11.216 31.568 18 34.034c6.783-2.466 16.249-11.447 17.617-19.959.17-.721.268-1.469.268-2.242z"/></svg>'>
-        
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link
+            rel="icon"
+            href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><path fill="rgb(221, 46, 68)" d="M35.885 11.833c0-5.45-4.418-9.868-9.867-9.868-3.308 0-6.227 1.633-8.018 4.129-1.791-2.496-4.71-4.129-8.017-4.129-5.45 0-9.868 4.417-9.868 9.868 0 .772.098 1.52.266 2.241C1.751 22.587 11.216 31.568 18 34.034c6.783-2.466 16.249-11.447 17.617-19.959.17-.721.268-1.469.268-2.242z"/></svg>'
+        />
+
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
 
         <style>
-            :root{
+            :root {
                 --columns: 2;
                 --image-gap: 16px;
             }
-            body{
+            body {
                 background-color: #1b252f;
                 font-family: Helvetica, sans-serif;
                 margin: 0;
             }
-            #main{
-                margin: 40px auto 0 auto    ;
+            #main {
+                margin: 40px auto 0 auto;
             }
 
             ::-webkit-scrollbar {
@@ -33,32 +36,32 @@
                 border-radius: 8px;
             }
 
-            .sidemenu-wrapper{
+            .sidemenu-wrapper {
                 --sidemenu-width: 100px;
                 --sidemenu-max-height: 600px;
-                --sidemenu-toggle-background: #AA1111;
-             
-                width:var(--sidemenu-width) !important;
+                --sidemenu-toggle-background: #aa1111;
+
+                width: var(--sidemenu-width) !important;
                 position: fixed;
-                right:0;
-                top:300px;
+                right: 0;
+                top: 300px;
                 min-height: 120px;
                 max-height: var(--sidemenu-max-height);
                 background-color: #fff;
-                z-index:10;
+                z-index: 10;
                 transition: 0.4s;
                 box-sizing: border-box;
                 box-shadow: 0 1px 1px rgb(0 0 0 / 10%);
-                display: flex; 
+                display: flex;
                 align-items: stretch;
-                border-radius:0;
-                padding:10px 0px;
+                border-radius: 0;
+                padding: 10px 0px;
                 border-top-left-radius: 6px;
                 border-bottom-left-radius: 6px;
-                border:1px solid rgba(0, 0, 0, 0.25);
+                border: 1px solid rgba(0, 0, 0, 0.25);
                 border-right: 0;
             }
-            .sidemenu{
+            .sidemenu {
                 width: 100%;
                 overflow: auto;
                 max-height: 100%;
@@ -68,19 +71,19 @@
                 display: flex;
                 flex-direction: column;
             }
-            .sidemenu-wrapper.side-hidden{
-                right:calc(var(--sidemenu-width) * -1);
+            .sidemenu-wrapper.side-hidden {
+                right: calc(var(--sidemenu-width) * -1);
                 box-shadow: none;
             }
-            .sidemenu-wrapper.side-hidden svg{
+            .sidemenu-wrapper.side-hidden svg {
                 margin-left: 0px !important;
                 transform: rotate(180deg);
             }
-            .sidemenu-toggle{
+            .sidemenu-toggle {
                 position: absolute;
                 background: var(--sidemenu-toggle-background);
-                top:60px;
-                right:101%;
+                top: 60px;
+                right: 101%;
                 height: 34px;
                 width: 20px;
                 display: flex;
@@ -89,58 +92,59 @@
                 border-bottom-left-radius: 5px;
                 border-top-left-radius: 5px;
                 cursor: pointer;
-                border:1px solid black;
-                border-right:0;
+                border: 1px solid black;
+                border-right: 0;
             }
-            .sidemenu-toggle svg{
+            .sidemenu-toggle svg {
                 margin-left: 1px;
-                width:22px;
+                width: 22px;
                 min-width: 22px;
-                fill:white;
+                fill: white;
                 transition: transform 0.5s;
             }
-            .sidemenu input{
-                width:88%;
+            .sidemenu input {
+                width: 88%;
                 box-sizing: border-box;
                 text-align: center;
                 font-size: 16px;
                 padding-left: 18px;
             }
-            .sidemenu-part{
+            .sidemenu-part {
                 display: flex;
                 flex-direction: column;
-                padding:0 6px;
+                padding: 0 6px;
                 padding-bottom: 8px;
                 border-bottom: 1px solid #1b252f;
                 margin-bottom: 8px;
                 user-select: none;
             }
-            .sidemenu-part:last-of-type{
+            .sidemenu-part:last-of-type {
                 padding-bottom: 0;
                 border: 0;
                 margin-bottom: 0;
             }
-            .sidemenu-checkbox, .sidemenu label{
-                cursor:pointer;
+            .sidemenu-checkbox,
+            .sidemenu label {
+                cursor: pointer;
                 padding-bottom: 2px;
             }
 
-            #scroll-wrapper{
+            #scroll-wrapper {
                 display: flex;
                 gap: var(--image-gap);
                 justify-content: center;
             }
-            .column{
+            .column {
                 max-width: calc(100% / var(--columns));
             }
-            .column img{
-                width:100%;
+            .column img {
+                width: 100%;
                 margin-bottom: var(--image-gap);
                 display: block;
                 cursor: pointer;
             }
 
-            #modal{
+            #modal {
                 top: 0;
                 left: 0;
                 position: fixed;
@@ -156,78 +160,99 @@
                 pointer-events: none;
                 opacity: 0;
             }
-            #modal-img{
-                max-width: 95%;
+            #modal-img {
+                max-width: 99%;
                 max-height: 95%;
                 transition: all 0.3s;
 
                 transform: scale(0.95);
             }
-            #modal.modal-show{
+            #modal.modal-show {
                 pointer-events: all;
                 opacity: 1;
             }
-            #modal.modal-show #modal-img{
-                transform: scale(1);
+            #modal.modal-show #modal-img {
+                transform: scale(1.2);
             }
-            #modal-info{
+            #modal-info {
                 position: absolute;
                 right: 15px;
                 bottom: 10px;
                 text-align: right;
-                color:white;
+                color: white;
             }
-            #modal-img-title{
+            #modal-img-title {
                 cursor: default;
             }
-            #modal-title-copy{
-                fill:white;
+            #modal-title-copy {
+                fill: white;
                 transition: all 0.25s;
             }
-            #modal-title-copy:hover{
+            #modal-title-copy:hover {
                 opacity: 0.5;
+            }
+            #file-input-button {
+                display: inline-block;
+                border-radius: 6px;
+                border: 2px solid black;
+                padding: 4px 8px;
+                cursor: pointer;
+            }
+            #filelist-input {
+                display: none;
             }
         </style>
     </head>
- 
+
     <body>
-        <div id=main>
+        <div id="main">
             <div id="scroll-wrapper"></div>
         </div>
 
         <div class="sidemenu-wrapper">
-            <div class=sidemenu-toggle>
-                <svg viewBox="0 0 24 24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6-6-6z"/></svg>
+            <div class="sidemenu-toggle">
+                <svg viewBox="0 0 24 24">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6-6-6z" />
+                </svg>
             </div>
-            <div class=sidemenu>
+            <div class="sidemenu">
                 <div class="sidemenu-part">
                     <label class="sidemenu-part-label" for="width">Width</label>
-                    <div class="sidemenu-part-input"><input type="number" id="width"></div>
+                    <div class="sidemenu-part-input"><input type="number" id="width" /></div>
                 </div>
                 <div class="sidemenu-part">
                     <label class="sidemenu-under-part" for="columns">Columns</label>
-                    <div class="sidemenu-part-input"><input type="number" id="columns"></div>
+                    <div class="sidemenu-part-input"><input type="number" id="columns" /></div>
                 </div>
                 <div class="sidemenu-part">
                     <label class="sidemenu-under-part" for="autoscroll-toggle">Autoscroll</label>
-                    <div class="sidemenu-part-input"><input class="sidemenu-checkbox" type="checkbox" id="autoscroll-toggle"></div>
-                    <div class="sidemenu-part-input"><input type="number" id="autoscroll-speed"></div>
+                    <div class="sidemenu-part-input"><input class="sidemenu-checkbox" type="checkbox" id="autoscroll-toggle" /></div>
+                    <div class="sidemenu-part-input"><input type="number" id="autoscroll-speed" /></div>
                 </div>
                 <div class="sidemenu-part">
                     <label class="sidemenu-under-part" for="random-toggle">Random</label>
-                    <div class="sidemenu-part-input"><input class="sidemenu-checkbox" type="checkbox" id="random-toggle"></div>
+                    <div class="sidemenu-part-input"><input class="sidemenu-checkbox" type="checkbox" id="random-toggle" /></div>
                 </div>
                 <div class="sidemenu-part">
-                    <div class="sidemenu-part-input"><input accept=".txt" type="file" id="filelist-input"></div>
+                    <div class="sidemenu-part-input">
+                        <div id="file-input-button">Add file</div>
+                        <input accept=".txt" type="file" id="filelist-input" />
+                    </div>
                 </div>
             </div>
         </div>
 
         <div id="modal">
-            <img id="modal-img">
+            <img id="modal-img" />
             <div id="modal-info">
                 <div>
-                    <svg id="modal-title-copy" xmlns="http://www.w3.org/2000/svg" height="48" width="48"><title>Copy</title><path d="M19 44q-3.75 0-6.375-2.625T10 35q0-1.6.725-3.025.725-1.425 2.425-3.125.75-.75 1.2-1.25.45-.5.95-1.1-2.55-3.9-3.925-8.175T10 10q0-2.9 1.05-4.45Q12.1 4 14 4q2.1 0 4.35 2.05Q20.6 8.1 22.3 11.5q.5 1 .925 2.075.425 1.075.775 2.375.35-1.3.775-2.375.425-1.075.925-2.075 1.7-3.4 3.95-5.45Q31.9 4 34 4q1.9 0 2.95 1.55Q38 7.1 38 10q0 4.05-1.375 8.325Q35.25 22.6 32.7 26.5q.5.6.95 1.1.45.5 1.2 1.25 1.7 1.7 2.425 3.125Q38 33.4 38 35q0 3.75-2.625 6.375T29 44q-2.25 0-3.625-.5L24 43l-1.375.5Q21.25 44 19 44Zm0-3q.85 0 2-.275t2.45-.825q-.55-.25-1-.85Q22 38.45 22 38q0-.4.575-.7Q23.15 37 24 37q.85 0 1.425.3.575.3.575.7 0 .45-.45 1.05-.45.6-1 .85 1.3.55 2.45.825Q28.15 41 29 41q2.5 0 4.25-1.75T35 35q0-1.1-.6-2.15-.6-1.05-1.75-2.05-.55-.5-1.225-1.2T30.2 28.2q-1.6-2.1-2.75-2.65Q26.3 25 24 25q-2.3 0-3.45.55-1.15.55-2.75 2.65-.55.7-1.225 1.4t-1.225 1.2q-1.15 1-1.75 2.05Q13 33.9 13 35q0 2.5 1.75 4.25T19 41Zm2-7.5q-.4 0-.7-.45Q20 32.6 20 32q0-.6.3-1.05.3-.45.7-.45.4 0 .7.45.3.45.3 1.05 0 .6-.3 1.05-.3.45-.7.45Zm6 0q-.4 0-.7-.45Q26 32.6 26 32q0-.6.3-1.05.3-.45.7-.45.4 0 .7.45.3.45.3 1.05 0 .6-.3 1.05-.3.45-.7.45Zm-9.65-9.35q1.05-1 2.075-1.475 1.025-.475 2.525-.625-.25-2.55-.85-4.975t-1.55-4.325Q18.4 10.4 16.9 8.825 15.4 7.25 13.75 6.7q-.4.75-.575 1.6Q13 9.15 13 10q0 3.6 1.125 7.225 1.125 3.625 3.225 6.925Zm13.3 0q2.1-3.3 3.225-6.925T35 10q0-.85-.175-1.7t-.575-1.6q-1.65.55-3.15 2.125t-2.65 3.925q-.95 1.9-1.55 4.325-.6 2.425-.85 4.975 1.5.15 2.525.625t2.075 1.475Z"/></svg>
+                    <svg id="modal-title-copy" xmlns="http://www.w3.org/2000/svg" height="48" width="48">
+                        <title>Copy</title>
+                        <path
+                            d="M19 44q-3.75 0-6.375-2.625T10 35q0-1.6.725-3.025.725-1.425 2.425-3.125.75-.75 1.2-1.25.45-.5.95-1.1-2.55-3.9-3.925-8.175T10 10q0-2.9 1.05-4.45Q12.1 4 14 4q2.1 0 4.35 2.05Q20.6 8.1 22.3 11.5q.5 1 .925 2.075.425 1.075.775 2.375.35-1.3.775-2.375.425-1.075.925-2.075 1.7-3.4 3.95-5.45Q31.9 4 34 4q1.9 0 2.95 1.55Q38 7.1 38 10q0 4.05-1.375 8.325Q35.25 22.6 32.7 26.5q.5.6.95 1.1.45.5 1.2 1.25 1.7 1.7 2.425 3.125Q38 33.4 38 35q0 3.75-2.625 6.375T29 44q-2.25 0-3.625-.5L24 43l-1.375.5Q21.25 44 19 44Zm0-3q.85 0 2-.275t2.45-.825q-.55-.25-1-.85Q22 38.45 22 38q0-.4.575-.7Q23.15 37 24 37q.85 0 1.425.3.575.3.575.7 0 .45-.45 1.05-.45.6-1 .85 1.3.55 2.45.825Q28.15 41 29 41q2.5 0 4.25-1.75T35 35q0-1.1-.6-2.15-.6-1.05-1.75-2.05-.55-.5-1.225-1.2T30.2 28.2q-1.6-2.1-2.75-2.65Q26.3 25 24 25q-2.3 0-3.45.55-1.15.55-2.75 2.65-.55.7-1.225 1.4t-1.225 1.2q-1.15 1-1.75 2.05Q13 33.9 13 35q0 2.5 1.75 4.25T19 41Zm2-7.5q-.4 0-.7-.45Q20 32.6 20 32q0-.6.3-1.05.3-.45.7-.45.4 0 .7.45.3.45.3 1.05 0 .6-.3 1.05-.3.45-.7.45Zm6 0q-.4 0-.7-.45Q26 32.6 26 32q0-.6.3-1.05.3-.45.7-.45.4 0 .7.45.3.45.3 1.05 0 .6-.3 1.05-.3.45-.7.45Zm-9.65-9.35q1.05-1 2.075-1.475 1.025-.475 2.525-.625-.25-2.55-.85-4.975t-1.55-4.325Q18.4 10.4 16.9 8.825 15.4 7.25 13.75 6.7q-.4.75-.575 1.6Q13 9.15 13 10q0 3.6 1.125 7.225 1.125 3.625 3.225 6.925Zm13.3 0q2.1-3.3 3.225-6.925T35 10q0-.85-.175-1.7t-.575-1.6q-1.65.55-3.15 2.125t-2.65 3.925q-.95 1.9-1.55 4.325-.6 2.425-.85 4.975 1.5.15 2.525.625t2.075 1.475Z"
+                        />
+                    </svg>
                 </div>
                 <div id="modal-img-title"></div>
             </div>
@@ -235,332 +260,337 @@
     </body>
 
     <script>
-        const $ = document.querySelector.bind(document);
-        const $$ = document.querySelectorAll.bind(document);
-        
-        const loadCount = 80;
-        
-        const widthInput = $("#width");
-        const columnsInput = $("#columns");
-        const autoscrollToggleInput = $("#autoscroll-toggle");
-        const autoscrollSpeedInput = $("#autoscroll-speed");
-        const randomInput = $("#random-toggle");
-        const filelistInput = $("#filelist-input");
-        const scrollWrapper = $("#scroll-wrapper");
-        const widthChangeElement = $("#main");
-        const modal = $("#modal");
-        const modalImg = $("#modal-img");
-        const copyIcon = $("#modal-title-copy");
-        const modalImageTitle = $("#modal-img-title");
+        const $ = document.querySelector.bind(document)
+        const $$ = document.querySelectorAll.bind(document)
 
-        const root = document.documentElement;
-        const imageGap = parseInt(getComputedStyle(root).getPropertyValue('--image-gap'));
-        const toIgnoreRegex = /^\\run\.bat$|^\\scroll\.html$|^\\filelist\.txt$/;
-        
-        var columnElements = [];
-        var columnHeights = [];
-        var loadedCount = 0;
-        var filelist;
+        const loadCount = 80
 
-        var lastObservedImg = null;
-        const options = {root: null, rootMargin: 800 + "px", threshold: 1};
+        const widthInput = $('#width')
+        const columnsInput = $('#columns')
+        const autoscrollToggleInput = $('#autoscroll-toggle')
+        const autoscrollSpeedInput = $('#autoscroll-speed')
+        const randomInput = $('#random-toggle')
+        const filelistInput = $('#filelist-input')
+        const fileInputOverlayButton = $('#file-input-button')
+        const scrollWrapper = $('#scroll-wrapper')
+        const widthChangeElement = $('#main')
+        const modal = $('#modal')
+        const modalImg = $('#modal-img')
+        const copyIcon = $('#modal-title-copy')
+        const modalImageTitle = $('#modal-img-title')
 
-        const observer = new IntersectionObserver(function(entries){
-            if(entries[0].isIntersecting){
-                loadImages();
+        const root = document.documentElement
+        const imageGap = parseInt(getComputedStyle(root).getPropertyValue('--image-gap'))
+        const toIgnoreRegex = /^\\run\.bat$|^\\scroll\.html$|^\\filelist\.txt$/
+
+        var columnElements = []
+        var columnHeights = []
+        var loadedCount = 0
+        var filelist
+
+        var lastObservedImg = null
+        const options = { root: null, rootMargin: 800 + 'px', threshold: 1 }
+
+        const observer = new IntersectionObserver(function (entries) {
+            if (entries[0].isIntersecting) {
+                loadImages()
             }
-        }, options);
+        }, options)
 
         var settings = {
             values: {
-                width: 1000,
+                width: 99,
                 columns: 2,
-                autoscrollSpeed: 10,
+                autoscrollSpeed: 4,
                 random: 0,
             },
 
-            set(type, value){
-                if(isNaN(value))
-                    return;
+            set(type, value) {
+                if (isNaN(value)) return
 
-                this.values[type] = value;
-                localStorage["settings"] = JSON.stringify(this.values);
+                this.values[type] = value
+                localStorage['settings'] = JSON.stringify(this.values)
 
-                switch(type){
-                    case "width":
-                        widthChangeElement.style.width = value + "%";
-                        break;
-                    case "columns":
-                        root.style.setProperty("--columns", value);
-                        reset();
-                        break;
-                    case "random":
-                        reset(value, !value);
-                        randomInput.blur();
-                        break;
-                    case "scroll-toggle":
-                        if(value){
-                            requestAnimationFrame(animateScroll);
-                            $(".sidemenu-wrapper").classList.add("side-hidden");
+                switch (type) {
+                    case 'width':
+                        widthChangeElement.style.width = value + '%'
+                        break
+                    case 'columns':
+                        root.style.setProperty('--columns', value)
+                        reset()
+                        break
+                    case 'random':
+                        reset(value, !value)
+                        randomInput.blur()
+                        break
+                    case 'scroll-toggle':
+                        if (value) {
+                            requestAnimationFrame(animateScroll)
+                            $('.sidemenu-wrapper').classList.add('side-hidden')
                         } else {
-                            cancelAnimationFrame(scrollRequest);
-                            $(".sidemenu-wrapper").classList.remove("side-hidden");
+                            cancelAnimationFrame(scrollRequest)
+                            $('.sidemenu-wrapper').classList.remove('side-hidden')
                         }
-                        autoscrollToggleInput.blur();
-                        break;
+                        autoscrollToggleInput.blur()
+                        break
                 }
             },
 
-            init(){
-                widthChangeElement.style.width = this.values.width + "%";
-                widthInput.value = this.values.width;
-                columnsInput.value = this.values.columns;
-                root.style.setProperty("--columns", this.values.columns);
-                autoscrollToggleInput.value = 0;
-                autoscrollSpeedInput.value = this.values.autoscrollSpeed;
-                randomInput.checked = this.values.random;
+            init() {
+                widthChangeElement.style.width = this.values.width + '%'
+                widthInput.value = this.values.width
+                columnsInput.value = this.values.columns
+                root.style.setProperty('--columns', this.values.columns)
+                autoscrollToggleInput.value = 0
+                autoscrollSpeedInput.value = this.values.autoscrollSpeed
+                randomInput.checked = this.values.random
 
-                reset(this.values.random);
-            }
+                reset(this.values.random)
+            },
         }
 
-        if(localStorage["filelist"]){
-            filelist = JSON.parse(localStorage["filelist"]);
+        if (localStorage['filelist']) {
+            filelist = JSON.parse(localStorage['filelist'])
         }
-        if(localStorage["settings"]){
-            settings.values = JSON.parse(localStorage["settings"]);
+        if (localStorage['settings']) {
+            settings.values = JSON.parse(localStorage['settings'])
         }
 
-        settings.init();
-        setModal();
-        setMenu();
+        settings.init()
+        setModal()
+        setMenu()
 
         // Autoscroll
-        var scrollRequest;
-        const scrollStep = 0.25;
-        var stepTemp = 0;
+        var scrollRequest
+        const scrollStep = 0.25
+        var stepTemp = 0
 
-        function animateScroll(){
-            scrollRequest = requestAnimationFrame(animateScroll);
-            move();
+        function animateScroll() {
+            scrollRequest = requestAnimationFrame(animateScroll)
+            move()
         }
 
-        function move(){
-            if(window.scrollY + window.innerHeight > document.body.offsetHeight){
-                autoscrollToggleInput.click();
-                return;
+        function move() {
+            if (window.scrollY + window.innerHeight > document.body.offsetHeight) {
+                autoscrollToggleInput.click()
+                return
             }
 
-            stepTemp += scrollStep * settings.values.autoscrollSpeed;
-            if(stepTemp >= 1){
-                window.scrollTo(0, window.scrollY + Math.floor(stepTemp));
-                stepTemp = stepTemp % 1;
-            }
-        }
-
-        async function loadImages(){
-            await loadNext();
-            
-            if(lastObservedImg){
-                observer.unobserve(lastObservedImg);
-            }
-            
-            if(filelist.length > loadedCount){
-                lastObservedImg = scrollWrapper.querySelectorAll(".column")[getSmallestColumnIndex()].querySelector("img:last-of-type");
-                observer.observe(lastObservedImg);
+            stepTemp += scrollStep * settings.values.autoscrollSpeed
+            if (stepTemp >= 1) {
+                window.scrollTo(0, window.scrollY + Math.floor(stepTemp))
+                stepTemp = stepTemp % 1
             }
         }
 
-        async function loadNext(){
-            for(let i = loadedCount; i < loadedCount + loadCount && i < filelist.length; i++){
-                if(filelist[i]){
-                    let skip = false;
-                    let img = new Image();
+        async function loadImages() {
+            await loadNext()
 
-                    img.alt = "";
-                    let imgPromise = onload2promise(img); 
-                    img.src = filelist[i].substring(1);
-                    
+            if (lastObservedImg) {
+                observer.unobserve(lastObservedImg)
+            }
+
+            if (filelist.length > loadedCount) {
+                lastObservedImg = scrollWrapper.querySelectorAll('.column')[getSmallestColumnIndex()].querySelector('img:last-of-type')
+                observer.observe(lastObservedImg)
+            }
+        }
+
+        async function loadNext() {
+            for (let i = loadedCount; i < loadedCount + loadCount && i < filelist.length; i++) {
+                if (filelist[i]) {
+                    let skip = false
+                    let img = new Image()
+
+                    img.alt = ''
+                    let imgPromise = onload2promise(img)
+                    img.src = filelist[i].substring(1)
+
                     await imgPromise.catch((err) => {
-                        loadedCount++;
-                        skip = true;
-                    });
+                        loadedCount++
+                        skip = true
+                    })
 
-                    if(!skip){
-                        let index = getSmallestColumnIndex();
-                        columnElements[index].append(img);
-                        columnHeights[index] += img.height + imageGap;
+                    if (!skip) {
+                        let index = getSmallestColumnIndex()
+                        columnElements[index].append(img)
+                        columnHeights[index] += img.height + imageGap
                     }
                 } else {
-                    loadedCount++;
+                    loadedCount++
                 }
             }
-            
-            loadedCount += loadCount;
+
+            loadedCount += loadCount
         }
 
-        function onload2promise(obj){
+        function onload2promise(obj) {
             return new Promise((resolve, reject) => {
-                obj.onload = () => resolve(obj);
-                obj.onerror = reject;
-            });
+                obj.onload = () => resolve(obj)
+                obj.onerror = reject
+            })
         }
 
-        function getSmallestColumnIndex(){
-            let minIndex = 0;
+        function getSmallestColumnIndex() {
+            let minIndex = 0
 
-            for(let i = 1; i < columnHeights.length; i++){
-                if(columnHeights[minIndex] > columnHeights[i])
-                    minIndex = i;
+            for (let i = 1; i < columnHeights.length; i++) {
+                if (columnHeights[minIndex] > columnHeights[i]) minIndex = i
             }
 
-            return minIndex;
+            return minIndex
         }
 
-        function reset(random = false, reset = false){
-            columnElements = [];
-            columnHeights = [];
-            scrollWrapper.innerHTML = "";
+        function reset(random = false, reset = false) {
+            columnElements = []
+            columnHeights = []
+            scrollWrapper.innerHTML = ''
 
-            let html = "";
-            for(let i = 0; i < settings.values.columns; i++){
-                html += "<div class=column></div>";
-                columnHeights.push(0);
+            let html = ''
+            for (let i = 0; i < settings.values.columns; i++) {
+                html += '<div class=column></div>'
+                columnHeights.push(0)
             }
 
-            scrollWrapper.insertAdjacentHTML("afterbegin", html);
-            columnElements = [...scrollWrapper.querySelectorAll(".column")];
-            loadedCount = 0;
-            lastObservedImg = null;
+            scrollWrapper.insertAdjacentHTML('afterbegin', html)
+            columnElements = [...scrollWrapper.querySelectorAll('.column')]
+            loadedCount = 0
+            lastObservedImg = null
 
-            if(random){
-                shuffleArray(filelist);
-            } else if(reset){
-                filelist = JSON.parse(localStorage["filelist"]);
+            if (random) {
+                shuffleArray(filelist)
+            } else if (reset) {
+                filelist = JSON.parse(localStorage['filelist'])
             }
 
-            loadImages();
+            loadImages()
         }
 
-        function shuffleArray(array){
-            for(let i = array.length - 1; i > 0; i--) {
-                let j = Math.floor(Math.random() * (i + 1));
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1))
 
-                let temp = array[i];
-                array[i] = array[j];
-                array[j] = temp;
+                let temp = array[i]
+                array[i] = array[j]
+                array[j] = temp
             }
         }
 
-        function setModal(){
-            modal.addEventListener("click", function(e){
-                if(!e.target.closest("#modal-title-copy") && e.target.id != "modal-img-title"){
-                    this.classList.remove("modal-show");
+        function setModal() {
+            modal.addEventListener('click', function (e) {
+                if (!e.target.closest('#modal-title-copy') && e.target.id != 'modal-img-title') {
+                    this.classList.remove('modal-show')
                 }
-            });
+            })
 
-            copyIcon.addEventListener("click", function(){
-                const imgName = modalImageTitle.textContent;
+            copyIcon.addEventListener('click', function () {
+                const imgName = modalImageTitle.textContent
 
-                navigator.clipboard.writeText(imgName);
-            });
+                navigator.clipboard.writeText(imgName)
+            })
         }
 
-        window.addEventListener("keydown", function(e){
-            const modal = $("#modal");
-            
-            if(e.key == "Escape"){
-                if(modal.classList.contains("modal-show")){
-                    modal.classList.remove("modal-show");
+        window.addEventListener('keydown', function (e) {
+            const modal = $('#modal')
+
+            if (e.key == 'Escape') {
+                if (modal.classList.contains('modal-show')) {
+                    modal.classList.remove('modal-show')
                 } else {
-                    autoscrollToggleInput.click();
+                    autoscrollToggleInput.click()
                 }
             }
-        });
+        })
 
-        scrollWrapper.addEventListener("click", function(e){
-            if(e.target.nodeName == "IMG"){
-                modalImg.src = e.target.src;
-                modalImageTitle.textContent = e.target.src.replace(/.*\//, "");
-                modal.classList.add("modal-show");
+        scrollWrapper.addEventListener('click', function (e) {
+            if (e.target.nodeName == 'IMG') {
+                modalImg.src = e.target.src
+                modalImageTitle.textContent = e.target.src.replace(/.*\//, '')
+                modal.classList.add('modal-show')
             }
-        });
+        })
 
-        function setMenu(){
-            $(".sidemenu-toggle").addEventListener("click", function(){
-                let wrapper = this.closest(".sidemenu-wrapper");
+        fileInputOverlayButton.addEventListener('click', function () {
+            filelistInput.click()
+        })
 
-                if(wrapper.classList.contains("side-hidden")){
-                    wrapper.classList.remove("side-hidden");                // Show
+        function setMenu() {
+            $('.sidemenu-toggle').addEventListener('click', function () {
+                let wrapper = this.closest('.sidemenu-wrapper')
+
+                if (wrapper.classList.contains('side-hidden')) {
+                    wrapper.classList.remove('side-hidden') // Show
                 } else {
-                    wrapper.classList.add("side-hidden");                   // Hide
+                    wrapper.classList.add('side-hidden') // Hide
                 }
-            });
+            })
 
-            widthInput.addEventListener("keydown", function(e){
-                if(e.key == "Enter"){
-                    settings.set("width", e.target.value);
+            widthInput.addEventListener('keydown', function (e) {
+                if (e.key == 'Enter') {
+                    settings.set('width', e.target.value)
                 }
-            });
-            widthInput.addEventListener("blur", function(e){
-                settings.set("width", e.target.value);
-            });
-            columnsInput.addEventListener("keydown", function(e){
-                if(e.key == "Enter"){
-                    settings.set("columns", e.target.value);
+            })
+            widthInput.addEventListener('blur', function (e) {
+                settings.set('width', e.target.value)
+            })
+            columnsInput.addEventListener('keydown', function (e) {
+                if (e.key == 'Enter') {
+                    settings.set('columns', e.target.value)
                 }
-            });
-            autoscrollToggleInput.addEventListener("change", function(e){
-                settings.set("scroll-toggle", e.target.checked);
-            });
-            autoscrollSpeedInput.addEventListener("keydown", function(e){
-                if(e.key == "Enter"){
-                    settings.set("autoscrollSpeed", e.target.value);
+            })
+            autoscrollToggleInput.addEventListener('change', function (e) {
+                settings.set('scroll-toggle', e.target.checked)
+            })
+            autoscrollSpeedInput.addEventListener('keydown', function (e) {
+                if (e.key == 'Enter') {
+                    settings.set('autoscrollSpeed', e.target.value)
                 }
-            });
-            autoscrollSpeedInput.addEventListener("blur", function(e){
-                settings.set("autoscrollSpeed", e.target.value);
-            });
-            randomInput.addEventListener("change", function(e){
-                settings.set("random", e.target.checked);
-            });
+            })
+            autoscrollSpeedInput.addEventListener('change', function (e) {
+                console.log(e)
+                settings.set('autoscrollSpeed', e.target.value)
+            })
+            autoscrollSpeedInput.addEventListener('blur', function (e) {
+                settings.set('autoscrollSpeed', e.target.value)
+            })
+            randomInput.addEventListener('change', function (e) {
+                settings.set('random', e.target.checked)
+            })
 
-            filelistInput.addEventListener("input", function(e){
-                const file = e.target.files[0];
+            filelistInput.addEventListener('input', function (e) {
+                const file = e.target.files[0]
 
-                if(file){
-                    const reader = new FileReader();
+                if (file) {
+                    const reader = new FileReader()
 
-                    reader.addEventListener("load", (e) => {
-                        const content = e.target.result;
+                    reader.addEventListener('load', (e) => {
+                        const content = e.target.result
 
-                        filelist = content.split(/\r?\n/);
-                        
-                        for(let i = 0; i < filelist.length; i++){
-                            if(filelist[i].indexOf(".") == -1 || filelist[i].match(toIgnoreRegex))
-                                filelist[i] = "";
+                        filelist = content.split(/\r?\n/)
+
+                        for (let i = 0; i < filelist.length; i++) {
+                            if (filelist[i].indexOf('.') == -1 || filelist[i].match(toIgnoreRegex)) filelist[i] = ''
                         }
 
-                        localStorage["filelist"] = JSON.stringify(filelist);
-                        this.value = "";
+                        localStorage['filelist'] = JSON.stringify(filelist)
+                        this.value = ''
 
-                        reset(settings.values.random);
-                    });
+                        reset(settings.values.random)
+                    })
 
-                    reader.readAsText(file);
+                    reader.readAsText(file)
                 }
 
-                this.blur();
-            });
+                this.blur()
+            })
+            ;[widthInput, columnsInput, autoscrollSpeedInput].forEach((el) => {
+                addSelect(el)
+            })
 
-            [widthInput, columnsInput, autoscrollSpeedInput].forEach(el => {
-                addSelect(el);
-            });
-
-            function addSelect(el){
-                el.addEventListener("focus", function(){
-                    el.select();
-                });
+            function addSelect(el) {
+                el.addEventListener('focus', function () {
+                    el.select()
+                })
             }
         }
     </script>
