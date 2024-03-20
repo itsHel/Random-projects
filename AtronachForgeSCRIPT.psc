@@ -92,15 +92,15 @@ Actor property enchanter auto
 Float randomDifference = 0.15
 String wrongRecipeMessage = "This recipe doesn't seem to be valid..." 
 String nonEnchantableMessage = "This item cannot be enchanted..." 
+String errorMessage = "Item is incompatible with this mod - please reload the game" 
 String namePrefix = "Blighted "
 
 ; 000CE734
 
 ;   - test multiple items
 
-;   - durations to 1 - absorbs, element damages - test ingame charges, banish dmg/turn dmg,
-;   - take duration 0 or 1 from mgef
-;   - return item if nonEnchantable or warn? - ask          ObjectReference Function DropObject(Form akObject, int aiCount = 1) native      + ask
+;   -* take duration 0 or 1 from mgef                ( - durations to 1 - absorbs, element damages - test ingame charges, banish dmg/turn dmg,)
+;   -* return item if nonEnchantable or warn? - ask          ObjectReference Function DropObject(Form akObject, int aiCount = 1) native      + ask
 
 state busy
     event onActivate(objectReference actronaut)
@@ -246,12 +246,12 @@ bool function ScanForEnchantments(formlist recipes, formList results)
     armor removedArmor
 
 	int size = dropBox.getNumItems()
-	int i = 0
+	int index = 0
 
     ; looking for item to enchant
-	while i < size
-		removedWeapon = dropBox.getNthForm(i) as weapon
-		removedArmor = dropBox.getNthForm(i) as armor
+	while index < size
+		removedWeapon = dropBox.getNthForm(index) as weapon
+		removedArmor = dropBox.getNthForm(index) as armor
 
 		if(removedWeapon)
             removedItem = removedWeapon
@@ -268,7 +268,7 @@ bool function ScanForEnchantments(formlist recipes, formList results)
 		endIf
 
         if(removedItem)
-            i = size
+            index = size
 
             dropBox.removeItem(removedWeapon, 1, TRUE, enchanter)
             utility.wait(0.1)
@@ -289,8 +289,7 @@ bool function ScanForEnchantments(formlist recipes, formList results)
                 debug.notification("2 - has player made enchantment")
                 if(dropBox.getItemCount(briarHeart) > 0)
                     dropBox.removeItem(briarHeart, 1)
-                    disenchant(removedWeapon, 0.0)
-                    return TRUE
+                    return disenchant(removedWeapon, 0.0)
                 else
                     failToDropbox(removedItem, nonEnchantableMessage)
                     return FALSE
@@ -307,19 +306,19 @@ bool function ScanForEnchantments(formlist recipes, formList results)
             summonFXpoint.placeAtMe(summonFX)
             utility.wait(0.33)
             
-    ;createdItemREF = createPoint.placeAtMe(removedItem)
+;createdItemREF = createPoint.placeAtMe(removedItem)
             createdItemREF = enchanter.dropObject(removedItem, 1)
             utility.wait(0.1)
 
             ; TODO ITEM IS REMOVED from game        OR reload message?
             if(!createdItemREF)
-                debug.notification(nonEnchantableMessage)
-                return
+                debug.notification(errorMessage)
+                return FALSE
             endIf
             debug.notification("createdItemREF " + createdItemREF)
 
             createdItemREF.moveTo(createPoint)
-    ;createdItemREF.SetItemHealthPercent(itemTempering)
+;createdItemREF.SetItemHealthPercent(itemTempering)
 
 
             ;createdItemREF = createPoint.placeAtMe(Results.getAt(i))
@@ -343,13 +342,13 @@ bool function ScanForEnchantments(formlist recipes, formList results)
                 int randomEnchIndex = utility.randomInt(0, weaponEnchantmentsWeak.getSize() - 1)
                 float magnitude = getEnchMagnitude(randomEnchIndex, materialLevel, weaponEnchantmentsWeak, weaponEnchantmentsBest)
                 int enchDuration = getEnchDuration(randomEnchIndex, materialLevel)
+                float maxCharge = 1950 + materialLevel * 350
 
                 ; add additional damage magicEffect for banish/turn undead
                 if(randomEnchIndex == 10 || randomEnchIndex == 11)
-                    float maxCharge = 1500 + materialLevel * 500
                     int[] durations = new int[2]
                     durations[0] = enchDuration
-                    durations[1] = 0
+                    durations[1] = 1
                     int[] areas = new int[2]
                     areas[0] = 0
                     areas[1] = 0
@@ -367,9 +366,8 @@ bool function ScanForEnchantments(formlist recipes, formList results)
                     magnitudes[0] = magnitude
                     magnitudes[1] = getBonusDamageMagnitude(effects[1], materialLevel)
 
-                    enchantment e = createdItemREF.CreateEnchantment(maxCharge, effects, magnitudes, areas, durations)
+                    createdItemREF.CreateEnchantment(maxCharge, effects, magnitudes, areas, durations)
                 else 
-                    float maxCharge = 1500 + materialLevel * 500
                     int[] durations = new int[1]
                     durations[0] = enchDuration
                     int[] areas = new int[1]
@@ -395,7 +393,7 @@ bool function ScanForEnchantments(formlist recipes, formList results)
             return TRUE
         endIf
 
-		i += 1
+		index += 1
 	endWhile
 	
 	return FALSE
@@ -405,18 +403,21 @@ function setToDefaultState()
     enchanter.removeAllItems()
 endFunction
 
-function disenchant(form item, float tempering)
+bool function disenchant(form item, float tempering)
     summonFXpoint.placeAtMe(summonFX)
     utility.wait(0.33)
 
     objectReference createdItemREF = enchanter.dropObject(item, 1)
 	utility.wait(0.1)
+
+    if(!createdItemREF)
+        debug.notification(errorMessage)
+        return FALSE
+    endIf
+
     createdItemREF.moveTo(createPoint)
 
-    if(!createdItemREF)     ; TODO
-        debug.notification(nonEnchantableMessage)
-        return
-    endIf
+    return TRUE
 ;objectReference createdItemREF = createPoint.placeAtMe(item)
 ;createdItemREF.setItemHealthPercent(tempering)
 endFunction
@@ -515,9 +516,6 @@ int function enchantmentCheck(form item)
 		Int slotMask = (item as armor).getSlotMask()
 		tempEnchantmentSpecial = wornObject.getEnchantment(enchanter, 0, slotMask)
 	endIf
-
-	;debug.notification(" TempEnchantmentBase " + tempEnchantmentBase)
-	;debug.notification(" TempEnchantmentSpecial " + tempEnchantmentSpecial)
 
     if(tempEnchantmentSpecial)
         return 2
