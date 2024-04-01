@@ -277,4 +277,10 @@ Buffed Vile's masque slightly
 
 subs ignore minus
 url copied without HTML space - when subs has space - rename?
-dat tam delay?
+subs notice on download
+
+fix extension	
+	https://en.uesp.net/wiki/Skyrim:Dwarven_Automatons#intnote_DawnguardLeveledSpider
+	https://en.uesp.net/wiki/Skyrim:Chaurus#Chaurus_Hunter
+
+
