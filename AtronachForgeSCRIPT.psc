@@ -1,6 +1,6 @@
 scriptname AtronachForgeSCRIPT extends ObjectReference
 
-Import PO3_SKSEfunctions
+;import stringUtil
 
 formlist property RecipeList auto
 {Master list of valid recipes. Most Complex should be first}
@@ -22,6 +22,8 @@ bool property sigilStoneInstalled auto hidden
 {has the sigil stone been installed?}
 objectReference property lastSummonedObject auto hidden
 ; store whatever we summoned last time to help clean up dead references.
+
+Actor property enchanter auto 
 
 Formlist property keywordsArmorLevel1 auto
 Formlist property keywordsArmorLevel2 auto
@@ -45,8 +47,11 @@ Formlist property weaponEnchantmentsBest auto
 ; 7 - magicka absorb
 ; 8 - health absorb
 ; 9 - chaos damage
-; 10 - banish
-; 11 - turn undead
+; 10 - force push
+; 11 - banish
+; 12 - turn undead
+int banishIndex = 11
+int turnUndeadIndex = 12
 
 Formlist property helmEnchantmentsWeak auto
 Formlist property helmEnchantmentsBest auto
@@ -71,13 +76,6 @@ Formlist property armorEnchantmentsSpecialBest auto
 ; 8 - resist shock
 ; 9 - resist frost
 
-MagicEffect property banishDamageMgef auto
-MagicEffect property turnUndeadDamageMgef auto
-
-SoulGem property blackSoulGem auto
-Ingredient property voidSalts auto
-Ingredient property briarHeart auto
-
 Keyword property disallowEnchantingKeyword auto  
 Keyword property disallowSellingKeyword auto  
 Keyword[] property armorKeywords Auto
@@ -86,21 +84,46 @@ Keyword[] property armorKeywords Auto
 ; 2 - gauntlets
 ; 3 - boots
 ; 4 - shield
+; 5 - clothing helm
+; 6 - clothing cuirass
+; 7 - clothing gauntlets
+; 8 - clothing boots
 
-Actor property enchanter auto 
+MagicEffect property banishDamageMgef auto
+MagicEffect property turnUndeadDamageMgef auto
+MagicEffect property banishBaseMgef auto
+MagicEffect property turnUndeadBaseMgef auto
+MagicEffect property dummyPreventDisenchanting auto
 
-Float randomDifference = 0.15
+Formlist property tomesLeveledLists auto
+
+SoulGem property blackSoulGem auto
+Ingredient property voidSalts auto
+Ingredient property briarHeart auto
+
+String armorHelmetString = "armorHelmetString"
+String armorCuirassString = "armorCuirassString"
+String armorGauntletsString = "armorGauntletsString"
+String armorBootsString = "armorBootsString"
+String armorShieldString = "armorShieldString"
+String clothingHelmetString = "clothingHelmetString"
+String clothingCuirassString = "clothingCuirassString"
+String clothingGauntletsString = "clothingGauntletsString"
+String clothingBootsString = "clothingBootsString"
+
+Int voidSaltsBaseCount = 1
+Int clothingMaterialLevel = 2
+Float randomDifference = 0.17
+float elementResistsMultipler = 0.66
+float fortifySchoolsMultipler = 0.85
+
+String namePrefix = "Blighted "
 String wrongRecipeMessage = "This recipe doesn't seem to be valid..." 
 String nonEnchantableMessage = "This item cannot be enchanted..." 
+String nonEnchantableSpelltomeMessage = "This book cannot be reforged..."
 String errorMessage = "Item is incompatible with this mod - please reload the game" 
-String namePrefix = "Blighted "
 
-; 000CE734
-
-;   - test multiple items
-
-;   -* take duration 0 or 1 from mgef                ( - durations to 1 - absorbs, element damages - test ingame charges, banish dmg/turn dmg,)
-;   -* return item if nonEnchantable or warn? - ask          ObjectReference Function DropObject(Form akObject, int aiCount = 1) native      + ask
+Bool failedWithMessage = FALSE
 
 state busy
     event onActivate(objectReference actronaut)
@@ -111,28 +134,35 @@ endState
 auto state ready
     event onActivate(objectReference actronaut)
         gotoState("busy")
-        bool DaedricItemCrafted
-        bool VanillaItemCrafted
+        bool daedricItemCrafted
+        bool vanillaItemCrafted
+        bool enchantmentCrafted
+        bool spelltomeCrafted
 
         ; first attempt to craft Daedric items if the Sigil Stone is installed
         ; debug.trace("Atronach Forge checking for Sigil Stone")
-        if sigilStoneInstalled == TRUE
+        if(sigilStoneInstalled == TRUE)
             ; debug.trace("Atronach Forge detected Sigil Stone, attempt Daedric Combines first")
-            DaedricItemCrafted = scanForRecipes(SigilRecipeList, SigilResultList)
+            daedricItemCrafted = scanForRecipes(sigilRecipeList, sigilResultList)
             utility.wait(0.1)
         endIf
-
         ; if no sigil stone, or if we checked and found no valid Daedric recipes...
-        if sigilStoneInstalled == FALSE || DaedricItemCrafted == FALSE
+        if(sigilStoneInstalled == FALSE || daedricItemCrafted == FALSE)
         ; debug.trace("Atronach Forge Either did not detect Sigil Stone, or no deadric combines were found")
-            VanillaItemCrafted = ScanForRecipes(RecipeList, ResultList)
+            VanillaItemCrafted = scanForRecipes(recipeList, resultList)
         endIf
-        if VanillaItemCrafted == FALSE && DaedricItemCrafted == FALSE
-            ScanForEnchantments(RecipeList, ResultList)
+        if(vanillaItemCrafted == FALSE && daedricItemCrafted == FALSE)
+            enchantmentCrafted = scanForEnchantments(recipeList, resultList)
+        endIf
+        if(!failedWithMessage && !enchantmentCrafted)
+            spelltomeCrafted = scanForSpellomes(recipeList, resultList)
         endIf
 
+        if(!failedWithMessage && !daedricItemCrafted && !vanillaItemCrafted && !enchantmentCrafted && !spelltomeCrafted)
+            debug.notification(wrongRecipeMessage)
+        endIf
+        
         setToDefaultState()
-
         gotoState("ready")
     endEvent
 endState
@@ -148,8 +178,8 @@ bool function scanForRecipes(formlist recipes, formList results)
 
     while checking == TRUE && i < t
         formlist currentRecipe = (recipes.getAt(i)) as formList
-        if currentRecipe == NONE
-            ; debug.trace("ERROR: Atronach Forge trying to check a NONE recipe")
+        if currentRecipe == none
+            ; debug.trace("ERROR: Atronach Forge trying to check a none recipe")
             else
             if scanSubList(currentRecipe) == TRUE
                 ; I have found a valid recipe
@@ -173,9 +203,9 @@ bool function scanForRecipes(formlist recipes, formList results)
         ; we found a valid item, so create it!
         ; debug.trace("Attempting to spawn a "+Results.getAt(i))
         summonFXpoint.placeAtMe(summonFX);summonFX.playGamebryoAnimation("mIdle")
-        utility.wait(0.33)
+        utility.wait(0.2)
         ;debug.notification(Results.getAt(i))
-        objectReference createdItemREF = createPoint.placeAtMe(results.getAt(i))
+        objectReference createdItemRef = createPoint.placeAtMe(results.getAt(i))
 
         ; if the last thing I summoned is a dead actor, just get rid of it.
         if (lastSummonedObject)
@@ -190,8 +220,8 @@ bool function scanForRecipes(formlist recipes, formList results)
         ; now store whatever we just created as the current/last summoned object
         lastSummonedObject = createdItemREF
 
-        if (createdItemREF as actor) != NONE
-            (createdItemREF as actor).startCombat(game.getPlayer())
+        if (createdItemRef as actor) != none
+            (createdItemRef as actor).startCombat(game.getPlayer())
         endIf
 
         return TRUE
@@ -237,10 +267,17 @@ function removeIngredients(formlist recipe)
     endWhile
 endFunction
 
-bool function ScanForEnchantments(formlist recipes, formList results)
+bool function scanForEnchantments(formlist recipes, formList results)
+    ; add 1 to compare it later and prevent disenchanting
+    float[] maxCharges = new float[4]
+    maxCharges[0] = 1951
+    maxCharges[1] = 2301
+    maxCharges[2] = 2651
+    maxCharges[3] = 3001
+
     int materialLevel
     string armorType
-    objectReference createdItemREF
+    objectReference createdItemRef
     form removedItem
     weapon removedWeapon
     armor removedArmor
@@ -262,68 +299,60 @@ bool function ScanForEnchantments(formlist recipes, formList results)
 
             armorType = getArmorType(removedArmor)      ; helm/cuirass/gauntlets/boots/shield/""
             if(!armorType)
-                failToDropbox(removedWeapon, nonEnchantableMessage)
+                debug.notification(nonEnchantableMessage)
                 return FALSE
+            endIf
+
+            if(armorType == clothingHelmetString || armorType == clothingCuirassString || armorType == clothingGauntletsString || armorType == clothingBootsString)
+                materialLevel = clothingMaterialLevel
             endIf
 		endIf
 
         if(removedItem)
             index = size
 
-            dropBox.removeItem(removedWeapon, 1, TRUE, enchanter)
+            dropBox.removeItem(removedItem, 1, TRUE, enchanter)
             utility.wait(0.1)
-            enchanter.equipItem(removedWeapon)
+
+            enchanter.equipItem(removedItem)
             utility.wait(0.1)
+
             if(enchanter.wornHasKeyword(disallowEnchantingKeyword))
-                failToDropbox(removedWeapon, wrongRecipeMessage)
-                return FALSE
-            endIf
-;itemTempering = temperingCheck(removedWeapon)
-            
-            int itemOldEnchantment = enchantmentCheck(removedWeapon)        ; 0 - not enchanted, 1 - has base enchant, 2 - has player made enchant
-            if(itemOldEnchantment == 1)
-                debug.notification("1 - has base enchantment")
-                failToDropbox(removedWeapon, nonEnchantableMessage)
-                return FALSE
-            elseIf(itemOldEnchantment == 2)
-                debug.notification("2 - has player made enchantment")
-                if(dropBox.getItemCount(briarHeart) > 0)
-                    dropBox.removeItem(briarHeart, 1)
-                    return disenchant(removedWeapon, 0.0)
-                else
-                    failToDropbox(removedItem, nonEnchantableMessage)
-                    return FALSE
-                endIf
+                return failGracefully(removedItem, nonEnchantableMessage)
             endIf
 
-            int voidSaltsNeeded = materialLevel + 1
-            bool ingredientsMatch = ScanAndRemoveEnchIngredients(voidSaltsNeeded)
+            int itemOldEnchantment = enchantmentCheck(removedItem, maxCharges)        ; 0 - not enchanted, 1 - has base enchant, 2 - has player made enchant, 3 - has forge enchant
+            if(itemOldEnchantment == 1)
+                ;debug.notification("1 - has base enchantment")
+                return failGracefully(removedItem, nonEnchantableMessage)
+            elseIf(itemOldEnchantment == 2)
+                ;debug.notification("2 - has player made enchantment")
+                if(dropBox.getItemCount(briarHeart) > 0)
+                    dropBox.removeItem(briarHeart, 1)
+                    return disenchant(removedItem, 0.0)
+                else
+                    return failGracefully(removedItem, wrongRecipeMessage)
+                endIf
+            elseIf(itemOldEnchantment == 3)
+                ;debug.notification("3 - has forge enchant")
+                return failGracefully(removedItem, nonEnchantableMessage)
+            endIf
+
+            int voidSaltsNeeded = materialLevel + voidSaltsBaseCount
+            bool ingredientsMatch = scanAndRemoveEnchIngredients(voidSaltsNeeded)
             if(!ingredientsMatch)
-                failToDropbox(removedWeapon, wrongRecipeMessage)
-                return FALSE
+                return failGracefully(removedItem, wrongRecipeMessage)
             endIf
 
             summonFXpoint.placeAtMe(summonFX)
-            utility.wait(0.33)
+            utility.wait(0.2)
             
-;createdItemREF = createPoint.placeAtMe(removedItem)
-            createdItemREF = enchanter.dropObject(removedItem, 1)
-            utility.wait(0.1)
-
-            ; TODO ITEM IS REMOVED from game        OR reload message?
-            if(!createdItemREF)
-                debug.notification(errorMessage)
+            createdItemRef = getItemFromEnchanter(removedItem)
+            if(createdItemRef == none)
                 return FALSE
             endIf
-            debug.notification("createdItemREF " + createdItemREF)
 
-            createdItemREF.moveTo(createPoint)
-;createdItemREF.SetItemHealthPercent(itemTempering)
-
-
-            ;createdItemREF = createPoint.placeAtMe(Results.getAt(i))
-            AddKeywordToRef(createdItemREF, disallowEnchantingKeyword) 
-            AddKeywordToRef(createdItemREF, disallowSellingKeyword) 
+            createdItemRef.moveTo(createPoint)
 
             ; if the last thing I summoned is a dead actor, just get rid of it.
             if (lastSummonedObject)
@@ -336,59 +365,103 @@ bool function ScanForEnchantments(formlist recipes, formList results)
             endIf
 
             ; now store whatever we just created as the current/last summoned object
-            lastSummonedObject = createdItemREF
+            lastSummonedObject = createdItemRef
 
             if(removedWeapon)
                 int randomEnchIndex = utility.randomInt(0, weaponEnchantmentsWeak.getSize() - 1)
-                float magnitude = getEnchMagnitude(randomEnchIndex, materialLevel, weaponEnchantmentsWeak, weaponEnchantmentsBest)
-                int enchDuration = getEnchDuration(randomEnchIndex, materialLevel)
-                float maxCharge = 1950 + materialLevel * 350
+                
+                int[] durations = new int[10]
+                int[] areas = new int[10]
+                float[] magnitudes = new float[10]
+                magicEffect[] effects = new magicEffect[10]
 
+               ; float magnitude = getEnchMagnitude(randomEnchIndex, materialLevel, weaponEnchantmentsWeak, weaponEnchantmentsBest)
+               ; int enchDuration = getEnchDuration(randomEnchIndex, materialLevel)
+                float maxCharge = maxCharges[materialLevel]
+                
                 ; add additional damage magicEffect for banish/turn undead
-                if(randomEnchIndex == 10 || randomEnchIndex == 11)
-                    int[] durations = new int[2]
-                    durations[0] = enchDuration
-                    durations[1] = 1
-                    int[] areas = new int[2]
-                    areas[0] = 0
-                    areas[1] = 0
+                if(randomEnchIndex == banishIndex || randomEnchIndex == turnUndeadIndex)
+                    int effectCount = (weaponEnchantmentsWeak.getAt(randomEnchIndex) as enchantment).getNumEffects()
+                    int effectIndex = 0
 
-                    magicEffect[] effects = new magicEffect[2]
-                    effects[0] = (weaponEnchantmentsWeak.getAt(randomEnchIndex) as enchantment).getNthEffectMagicEffect(0)
+                    ; make sure that banish/turn undead mgef exists on this enchantment
+                    while(effectIndex < effectCount)
+                        if((weaponEnchantmentsWeak.getAt(randomEnchIndex) as enchantment).getNthEffectMagicEffect(effectIndex) == banishBaseMgef || (weaponEnchantmentsWeak.getAt(randomEnchIndex) as enchantment).getNthEffectMagicEffect(effectIndex) == turnUndeadBaseMgef)
 
-                    if(randomEnchIndex == 10)
+                            magnitudes[0] = getEnchMagnitude(randomEnchIndex, materialLevel, weaponEnchantmentsWeak, weaponEnchantmentsBest, effectIndex)
+                           ; magnitudes[0] = round(magnitudes[0] / 2)        ; nerf magnitude because it takes too much charge
+                           ; magnitudes[1] = getSpecialDamageMagnitude(11, materialLevel)
+                            durations[0] = getEnchDuration(randomEnchIndex, materialLevel, effectIndex)
+                            durations[1] = 1                
+                            areas[0] = 0
+                            areas[1] = 0
+                            ;effects[0] = banishBaseMgef
+                            ;effects[1] = banishDamageMgef
+
+                            effectIndex = effectCount
+                        endIf
+
+                       ; if((weaponEnchantmentsWeak.getAt(randomEnchIndex) as enchantment).getNthEffectMagicEffect(effectIndex) == turnUndeadBaseMgef)
+                     ;       magnitudes[0] = getEnchMagnitude(randomEnchIndex, materialLevel, weaponEnchantmentsWeak, weaponEnchantmentsBest, effectIndex)
+                  ;          magnitudes[1] = getSpecialDamageMagnitude(12, materialLevel)
+                     ;       durations[0] = getEnchDuration(randomEnchIndex, materialLevel, effectIndex)
+                   ;         durations[1] = 1  
+                   ;         areas[0] = 0
+                   ;         areas[1] = 0
+                    ;        effects[0] = turnUndeadBaseMgef
+                   ;         effects[1] = turnUndeadDamageMgef
+
+                     ;       effectIndex = effectCount
+                        ;endIf
+
+                        effectIndex += 1
+
+                        ; banish/turn undead mgef not found on enchantment
+                        if(effectIndex + 1 == effectCount)
+                            while(randomEnchIndex == banishIndex || randomEnchIndex == turnUndeadIndex)
+                                randomEnchIndex = utility.randomInt(0, weaponEnchantmentsWeak.getSize() - 1)
+                            endWhile
+                        endIf
+                    endWhile
+
+                    
+                    if(randomEnchIndex == banishIndex)
+                        effects[0] = banishBaseMgef
                         effects[1] = banishDamageMgef
-                    else
+                        magnitudes[0] = round(magnitudes[0] / 2)        ; nerf magnitude because it takes too much charge
+                        magnitudes[1] = getSpecialDamageMagnitude(banishIndex, materialLevel)
+                    elseIf(randomEnchIndex == turnUndeadIndex)
+                        effects[0] = turnUndeadBaseMgef
                         effects[1] = turnUndeadDamageMgef
+                        magnitudes[1] = getSpecialDamageMagnitude(turnUndeadIndex, materialLevel)
                     endIf
-
-                    float[] magnitudes = new float[2]
-                    magnitudes[0] = magnitude
-                    magnitudes[1] = getBonusDamageMagnitude(effects[1], materialLevel)
-
-                    createdItemREF.CreateEnchantment(maxCharge, effects, magnitudes, areas, durations)
-                else 
-                    int[] durations = new int[1]
-                    durations[0] = enchDuration
-                    int[] areas = new int[1]
-                    areas[0] = 0
-                    float[] magnitudes = new float[1]
-                    magnitudes[0] = magnitude
-                    magicEffect[] effects = new magicEffect[1]
-                    effects[0] = (weaponEnchantmentsWeak.getAt(randomEnchIndex) as enchantment).getNthEffectMagicEffect(0)
-
-                    createdItemREF.CreateEnchantment(maxCharge, effects, magnitudes, areas, durations)
                 endIf
-            else    ; armor
-                createArmorEnchantment(createdItemREF, materialLevel, armorType)
-            endIf
 
-        ;enchantment e = createdItemREF.CreateEnchantment(maxCharge, weaponEnchantments,magnitudes , areas , durations )
-        ;	debug.notification(createdItemREF)
-        ;	debug.notification((createdItemREF as form).HasKeyword(keywordsLevel1[0]))
-        ;	debug.notification(weaponEnchantments[0])
-            string previousName = createdItemREF.getDisplayName()
-            createdItemREF.SetDisplayName(namePrefix + previousName, TRUE)
+                if(randomEnchIndex != banishIndex && randomEnchIndex != turnUndeadIndex)
+                    int effectCount = (weaponEnchantmentsWeak.getAt(randomEnchIndex) as enchantment).getNumEffects()
+                    int effectIndex = 0
+
+                    while(effectIndex < effectCount)
+                        durations[effectIndex] = getEnchDuration(randomEnchIndex, materialLevel, effectIndex)
+                        areas[effectIndex] = 0
+                        magnitudes[effectIndex] = getEnchMagnitude(randomEnchIndex, materialLevel, weaponEnchantmentsWeak, weaponEnchantmentsBest, effectIndex)
+                        effects[effectIndex] = (weaponEnchantmentsWeak.getAt(randomEnchIndex) as enchantment).getNthEffectMagicEffect(effectIndex)
+                        effectIndex += 1
+                    endWhile
+               ; else 
+              ;      durations[0] = enchDuration
+              ;      areas[0] = 0
+                    if(randomEnchIndex == 10)           ; force push effect
+                        magnitudes[0] = getSpecialDamageMagnitude(randomEnchIndex, materialLevel)
+                    endIf
+;                    effects[0] = (weaponEnchantmentsWeak.getAt(randomEnchIndex) as enchantment).getNthEffectMagicEffect(0)
+                endIf
+
+                createdItemRef.CreateEnchantment(maxCharge, effects, magnitudes, areas, durations)
+                createdItemRef.setItemCharge(0)
+            else    ; armor
+                createArmorEnchantment(createdItemRef, materialLevel, armorType)
+            endIf
 
             return TRUE
         endIf
@@ -401,31 +474,28 @@ endFunction
 
 function setToDefaultState()
     enchanter.removeAllItems()
+    failedWithMessage
 endFunction
 
 bool function disenchant(form item, float tempering)
     summonFXpoint.placeAtMe(summonFX)
-    utility.wait(0.33)
+    utility.wait(0.2)
 
-    objectReference createdItemREF = enchanter.dropObject(item, 1)
-	utility.wait(0.1)
-
-    if(!createdItemREF)
-        debug.notification(errorMessage)
+    objectReference createdItemRef = getItemFromEnchanter(item)
+    if(createdItemRef == none)
         return FALSE
     endIf
-
-    createdItemREF.moveTo(createPoint)
+    
+    createdItemRef.SetEnchantment(none, 0)
+    createdItemRef.moveTo(createPoint)
 
     return TRUE
-;objectReference createdItemREF = createPoint.placeAtMe(item)
-;createdItemREF.setItemHealthPercent(tempering)
 endFunction
 
 int function getMaterialLevel(form item, bool isWeapon)
     int minGoldValueForWeaponLevel2 = 300
     int minGoldValueForWeaponLevel3 = 4500
-    int minGoldValueForArmorLevel2 = 100
+    int minGoldValueForArmorLevel2 = 125
     int minGoldValueForArmorLevel3 = 1500
 
 	int i = 0
@@ -446,7 +516,6 @@ int function getMaterialLevel(form item, bool isWeapon)
         endWhile
 
         ; decide by value if no keywords found
-        debug.notification("getWeaponMaterialLevel else")
         if(item.getGoldValue() < minGoldValueForWeaponLevel2)
             return 0
         elseIf(item.getGoldValue() < minGoldValueForWeaponLevel3)   
@@ -490,34 +559,55 @@ bool function scanAndRemoveEnchIngredients(int voidsaltsMinCount)
 	endIf
 endFunction
 
-float function getEnchMagnitude(int index, int level, magicEffect mgefWeak, magicEffect mgefBest)
-    float step = ((mgefBest.getAt(index) as enchantment).getNthEffectMagnitude(0) - (mgefWeak.getAt(index) as enchantment).getNthEffectMagnitude(0)) / 3
-	float magnitude = (mgefWeak.getAt(index) as enchantment).getNthEffectMagnitude(0) + (step * level)
+float function getEnchMagnitude(int index, int level, formlist mgefWeak, formlist mgefBest, int effectIndex)
+    float step = ((mgefBest.getAt(index) as enchantment).getNthEffectMagnitude(effectIndex) - (mgefWeak.getAt(index) as enchantment).getNthEffectMagnitude(effectIndex)) / 3
+	float magnitude = (mgefWeak.getAt(index) as enchantment).getNthEffectMagnitude(effectIndex) + (step * level)
     
-	return utility.randomFloat(magnitude * (1 - randomDifference), magnitude * (1 + randomDifference))
+	return round(utility.randomFloat(magnitude * (1 - randomDifference), magnitude * (1 + randomDifference)))
 endFunction
 
-int function getEnchDuration(int index, int level)
-	float step = ((weaponEnchantmentsBest.getAt(index) as enchantment).getNthEffectDuration(0) - (weaponEnchantmentsWeak.getAt(index) as Enchantment).getNthEffectDuration(0)) / 3
-	float duration = (weaponEnchantmentsWeak.getAt(index) as enchantment).getNthEffectDuration(0) + (step * level)
-
-	return math.floor(duration)
+int function getEnchDuration(int index, int level, int effectIndex)
+	float step = (((weaponEnchantmentsBest.getAt(index) as enchantment).getNthEffectDuration(effectIndex) as float) - ((weaponEnchantmentsWeak.getAt(index) as Enchantment).getNthEffectDuration(effectIndex) as float)) / 3
+	float duration = (weaponEnchantmentsWeak.getAt(index) as enchantment).getNthEffectDuration(effectIndex) + (step * level)
+	
+    return round(duration)
 endFunction
 
-int function enchantmentCheck(form item)
-	enchantment tempEnchantmentBase = None
-	enchantment tempEnchantmentSpecial = None
+int function enchantmentCheck(form item, float[] maxCharges)
+	enchantment tempEnchantmentBase = none
+	enchantment tempEnchantmentSpecial = none
+	string itemName = none
+    bool isForgeEnch = FALSE
+    float maxCharge
 
-	if (item.GetType() == 41)
+	if(item.getType() == 41)
 		tempEnchantmentBase = (item as weapon).getEnchantment()
 		tempEnchantmentSpecial = wornObject.getEnchantment(enchanter, 1, 0)
+        itemName = wornObject.getDisplayName(enchanter, 1, 0)
+        maxCharge = wornObject.getItemMaxCharge(enchanter, 1, 0)
 	else
 		tempEnchantmentBase = (item as armor).getEnchantment()		
-		Int slotMask = (item as armor).getSlotMask()
+		int slotMask = (item as armor).getSlotMask()
 		tempEnchantmentSpecial = wornObject.getEnchantment(enchanter, 0, slotMask)
+
+        if(tempEnchantmentSpecial)
+            int enchSize = tempEnchantmentSpecial.getNumEffects()
+            int index = 0
+
+            while(index < enchSize)
+
+                if(tempEnchantmentSpecial.getNthEffectMagicEffect(index) == dummyPreventDisenchanting)
+                    isForgeEnch = TRUE
+                    index = enchSize
+                endIf
+                index += 1
+            endWhile
+        endIf
 	endIf
 
-    if(tempEnchantmentSpecial)
+    if(isForgeEnch || maxCharges.find(maxCharge) >= 0)
+        return 3
+    elseif(tempEnchantmentSpecial)
         return 2
     elseif(tempEnchantmentBase)
         return 1
@@ -526,44 +616,56 @@ int function enchantmentCheck(form item)
     endIf
 endFunction
 
-float function temperingCheck(form item)
-	float itemTempering = 1.0
+;float function temperingCheck(form item)
+;	float itemTempering = 1.0
 
-	if (item.getType() == 41)
-		itemTempering = wornObject.getItemHealthPercent(enchanter, 1, 0)
-	else
-		Int slotMask = (item as armor).getSlotMask()
-		itemTempering = wornObject.getItemHealthPercent(enchanter, 0, slotMask)
-	endIf
+;	if (item.getType() == 41)
+;		itemTempering = wornObject.getItemHealthPercent(enchanter, 1, 0)
+;	else
+;		Int slotMask = (item as armor).getSlotMask()
+;		itemTempering = wornObject.getItemHealthPercent(enchanter, 0, slotMask)
+;	endIf
 
-	debug.notification(" ItemTempering " + itemTempering)
+;	debug.notification(" ItemTempering " + itemTempering)
 
-    return itemTempering
-endFunction
+;    return itemTempering
+;endFunction
 
-float function getBonusDamageMagnitude(magicEffect damageEffect, int materialLevel)
-    float magnitude
+; 10 - force, 11 - banish, 12 - turn undead
+float function getSpecialDamageMagnitude(int index, int materialLevel)
+    ; get magnutide from fire damage (0 index)
+    float magnitude = getEnchMagnitude(0, materialLevel, weaponEnchantmentsWeak, weaponEnchantmentsBest, 0)
 
-    if(damageEffect == banishDamageMgef)
-        magnitude = 40 + 20 * materialLevel          ; banishDamageMgef
-    else 
-        magnitude = 16 + 9 * materialLevel           ; turnUndeadDamageMgef
+    if(index == 10)
+        magnitude = magnitude * 4.2
+    elseIf(index == banishIndex)
+        magnitude = magnitude * 2.8
+    elseIf(index == turnUndeadIndex)
+        magnitude = magnitude * 1.4
     endIf
 
-    return utility.randomFloat(magnitude * (1 - randomDifference), magnitude * (1 + randomDifference))
+    return round(magnitude)
 endFunction
 
 string function getArmorType(form item)
     if(item.hasKeyword(armorKeywords[0]))
-        return "helm"
+        return armorHelmetString
     elseIf(item.hasKeyword(armorKeywords[1]))
-        return "cuirass"
+        return armorCuirassString
     elseIf(item.hasKeyword(armorKeywords[2]))
-        return "gauntlets"
+        return armorGauntletsString
     elseIf(item.hasKeyword(armorKeywords[3]))
-        return "boots"
+        return armorBootsString
     elseIf(item.hasKeyword(armorKeywords[4]))
-        return "shield"
+        return armorShieldString
+    elseIf(item.hasKeyword(armorKeywords[5]))
+        return clothingHelmetString
+    elseIf(item.hasKeyword(armorKeywords[6]))
+        return clothingCuirassString
+    elseIf(item.hasKeyword(armorKeywords[7]))
+        return clothingGauntletsString
+    elseIf(item.hasKeyword(armorKeywords[8]))
+        return clothingBootsString
     else
         return ""
     endIf
@@ -576,13 +678,12 @@ function createArmorEnchantment(objectReference itemRef, int materialLevel, stri
     formList effectsFormlistWeak
     formList effectsFormlistBest
 
-    float maxCharge = 0
-    int[] durations = new int[5]
-    int[] areas = new int[5]
-    float[] magnitudes = new float[5]
-    magicEffect[] effects = new magicEffect[5]
+    int[] durations = new int[12]
+    int[] areas = new int[12]
+    float[] magnitudes = new float[12]
+    magicEffect[] effects = new magicEffect[12]
 
-    if(armorType == "cuirass")              ; 2 special effects
+    if(armorType == armorCuirassString || armorType == clothingCuirassString)           ; 2 special effects (fortify schools/element resists)
         effectsFormlistWeak = cuirassEnchantmentsWeak
         effectsFormlistBest = cuirassEnchantmentsBest
         totalEffectsCount = cuirassEnchantmentsWeak.getSize() + 1
@@ -595,25 +696,25 @@ function createArmorEnchantment(objectReference itemRef, int materialLevel, stri
             specialEffectOffset = 7
             specialEffectCount = 3
         endIf
-    elseIf(armorType == "helm")             ; 1 special effect
+    elseIf(armorType == armorHelmetString || armorType == clothingHelmetString)         ; 1 special effect (fortify schools)
         effectsFormlistWeak = helmEnchantmentsWeak
         effectsFormlistBest = helmEnchantmentsBest
         totalEffectsCount = helmEnchantmentsWeak.getSize()
         specialEffectOffset = 2
         specialEffectCount = 5
-    elseIf(armorType == "gauntlets")        ; 1 special effect
+    elseIf(armorType == armorGauntletsString || armorType == clothingGauntletsString)   ; 1 special effect (fortify melee damage)
         effectsFormlistWeak = gauntletsEnchantmentsWeak
         effectsFormlistBest = gauntletsEnchantmentsBest
         totalEffectsCount = gauntletsEnchantmentsWeak.getSize()
         specialEffectOffset = 0
         specialEffectCount = 2
-    elseIf(armorType == "boots")            ; 1 special effect
+    elseIf(armorType == armorBootsString || armorType == clothingBootsString)           ; 1 special effect (fortify melee damage)
         effectsFormlistWeak = bootsEnchantmentsWeak
         effectsFormlistBest = bootsEnchantmentsBest
         totalEffectsCount = bootsEnchantmentsWeak.getSize()
         specialEffectOffset = 0
         specialEffectCount = 2
-    elseIf(armorType == "shield")           ; 2 special effects
+    elseIf(armorType == armorShieldString)                                              ; 2 special effects (fortify schools/element resists)
         effectsFormlistWeak = shieldEnchantmentsWeak
         effectsFormlistBest = shieldEnchantmentsBest
         totalEffectsCount = shieldEnchantmentsWeak.getSize() + 1
@@ -626,36 +727,177 @@ function createArmorEnchantment(objectReference itemRef, int materialLevel, stri
             specialEffectOffset = 7
             specialEffectCount = 3
         endIf
-    elseIf
+    endIf
 
-    randomEnchIndex = utility.randomInt(0, totalEffectsCount)
-
+    int randomEnchIndex = utility.randomInt(0, totalEffectsCount)
     float magnitude
-    if(randomEnchIndex >= totalEffectsCount - effectsFormlistWeak.getSize())
-        ; special ench
-        magnitude = getEnchStrenght(specialEffectOffset, materialLevel, FALSE, armorEnchantmentsSpecialWeak, armorEnchantmentsSpecialBest)
+    int index = 0
 
-        int index = 0
+    if(randomEnchIndex >= effectsFormlistWeak.getSize())
+        ; special ench (fortify melee damage/fortify schools/element resists)
+        magnitude = getEnchMagnitude(specialEffectOffset, materialLevel, armorEnchantmentsSpecialWeak, armorEnchantmentsSpecialBest, 0)
+
         while (index < specialEffectCount)
             effects[index] = (armorEnchantmentsSpecialWeak.getAt(index + specialEffectOffset) as enchantment).getNthEffectMagicEffect(0)
             magnitudes[index] = magnitude
+            ; nerf effects that are too strong: magic schools reductions (5), resist elements (3)
+            if(specialEffectCount == 3)
+               magnitudes[index] = math.floor(magnitudes[index] * elementResistsMultipler)      
+            elseIf(specialEffectCount == 5)
+               magnitudes[index] = math.floor(magnitudes[index] * fortifySchoolsMultipler)      
+            endIf
             areas[index] = 0
             durations[index] = 0
             index += 1
         endWhile
     else
         ; normal ench
-        magnitude = getEnchStrenght(randomEnchIndex, materialLevel, FALSE, effectsFormlistWeak, effectsFormlistBest)
-        effects[0] = (effectsFormlistWeak.getAt(randomEnchIndex) as enchantment).getNthEffectMagicEffect(0)
-        magnitudes[0] = magnitude
-        areas[0] = 0
-        durations[0] = 0
+        int effectCount = (effectsFormlistWeak.getAt(randomEnchIndex) as enchantment).getNumEffects()
+        int effectIndex = 0
+
+        while(effectIndex < effectCount)
+            effects[effectIndex] = (effectsFormlistWeak.getAt(randomEnchIndex) as enchantment).getNthEffectMagicEffect(effectIndex)
+            magnitudes[effectIndex] = getEnchMagnitude(randomEnchIndex, materialLevel, effectsFormlistWeak, effectsFormlistBest, effectIndex)
+            areas[effectIndex] = 0
+            durations[effectIndex] = 0
+            effectIndex += 1
+            index = effectIndex
+        endWhile
     endIf
+
+    ; add dummy effect to prevent disenchanting
+    effects[index] = dummyPreventDisenchanting
+    magnitudes[index] = 0
+    areas[index] = 0
+    durations[index] = 0
 
     itemRef.CreateEnchantment(0, effects, magnitudes, areas, durations)
 endFunction
 
-function failToDropbox(form item, string warnMessage)
-    enchanter.RemoveItem(item, 1, TRUE, dropBox)
+bool function failGracefully(form item, string warnMessage)
+    failedWithMessage = TRUE
+
+    objectReference createdItemRef = getItemFromEnchanter(item)
+    if(createdItemRef == none)
+        return FALSE
+    endIf
+
+    createdItemRef.moveTo(createPoint)
+    createdItemRef.setItemCharge(0)
+
     debug.notification(warnMessage)
+
+    return FALSE
+endFunction
+
+int function round(float number)
+    float tempFloat = number - math.floor(number)
+
+    if(tempFloat < 0.5)
+        return math.floor(number)
+    else
+        return math.ceiling(number)
+    endIf
+endFunction
+
+objectReference function getItemFromEnchanter(form item)
+    objectReference itemRef = enchanter.dropObject(item, 1)
+    utility.wait(0.1)
+
+    ;int index = 0
+    ;while(!itemRef.is3DLoaded())
+    ;    index += 1
+    ;    if(index >= 50)
+    ;        debug.notification(errorMessage)
+    ;        return none
+    ;    endIf
+    ;endWhile
+
+    if(!itemRef)
+        debug.notification(errorMessage)
+        return none
+    endIf
+
+    return itemRef
+endFunction
+
+bool function scanForSpellomes(formlist recipes, formList results)
+    objectReference createdItemRef
+    book spelltomeForm
+
+	int size = dropBox.getNumItems()
+	int index = 0
+
+    if(!scanAndRemoveEnchIngredients(0))
+        return FALSE
+    endIf
+
+	while(index < size)
+		spelltomeForm = dropBox.getNthForm(index) as book
+
+        ; book found
+        if(spelltomeForm)
+            index = size
+
+            int listsCount = tomesLeveledLists.getSize()
+            int listsIndex = 0
+
+            while(listsIndex < listsCount)
+                leveledItem leveledSpelltomes = (tomesLeveledLists.getAt(listsIndex) as leveledItem)
+                int listItemsCount = leveledSpelltomes.getNumForms()
+                int listItemsIndex = 0
+
+                while(listItemsIndex < listItemsCount)
+                    if(leveledSpelltomes.getNthForm(listItemsIndex) == spelltomeForm)
+                        ; spelltomeFound
+
+                        if(listItemsCount < 2)
+                            return FALSE
+                        endIf
+                        int randomTomeIndex = utility.randomInt(0, listItemsCount)
+                        while(randomTomeIndex == listItemsIndex)
+                            randomTomeIndex = utility.randomInt(0, listItemsCount)
+                        endWhile
+
+                        dropBox.removeItem(spelltomeForm, 1, TRUE, enchanter)
+                        objectReference oldSpelltome = getItemFromEnchanter(spelltomeForm)
+                        string oldName = oldSpelltome.getdisplayName()
+
+                        ; cancel if spelltome was renamed (probably by this mod)
+                        if(oldSpelltome.getdisplayName() != spelltomeForm.getName())
+                            oldSpelltome.moveTo(createPoint)
+                            debug.notification(nonEnchantableSpelltomeMessage)
+                            failedWithMessage = TRUE
+                            return FALSE
+                        endIf
+
+                        summonFXpoint.placeAtMe(summonFX)
+                        utility.wait(0.2)
+                        createdItemRef = createPoint.placeAtMe(leveledSpelltomes.getNthForm(randomTomeIndex))
+                        utility.wait(0.1)
+
+                        string createdItemName = createdItemRef.getdisplayName()
+                        createdItemRef.setDisplayName(namePrefix + createdItemName)         ; overrides name forever
+
+                        oldSpelltome.delete()
+                        
+                        return TRUE
+                    endIf
+                    
+                    listItemsIndex += 1
+                endWhile
+
+                listsIndex += 1
+            endWhile
+
+            ; spelltome not found in any leveled lists
+            debug.notification(nonEnchantableSpelltomeMessage)
+            failedWithMessage = TRUE
+            return FALSE
+        endIf
+
+        index += 1
+    endWhile
+
+    return FALSE
 endFunction
