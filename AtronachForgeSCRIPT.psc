@@ -1,4 +1,5 @@
 	- decide atronachs
+	- drop book? / any item			on wrong recipe
 
 	- no savescumming
 	- list of materials + salts required + gold
@@ -64,6 +65,7 @@ Formlist property weaponEnchantmentsBest auto
 ; 10 - force push
 ; 11 - banish
 ; 12 - turn undead
+int forcePushIndex = 10
 int banishIndex = 11
 int turnUndeadIndex = 12
 
@@ -462,10 +464,8 @@ bool function scanForEnchantments(formlist recipes, formList results)
                         effects[effectIndex] = (weaponEnchantmentsWeak.getAt(randomEnchIndex) as enchantment).getNthEffectMagicEffect(effectIndex)
                         effectIndex += 1
                     endWhile
-               ; else 
-              ;      durations[0] = enchDuration
-              ;      areas[0] = 0
-                    if(randomEnchIndex == 10)           ; force push effect
+
+                    if(randomEnchIndex == forcePushIndex)
                         magnitudes[0] = getSpecialDamageMagnitude(randomEnchIndex, materialLevel)
                     endIf
 ;                    effects[0] = (weaponEnchantmentsWeak.getAt(randomEnchIndex) as enchantment).getNthEffectMagicEffect(0)
@@ -650,7 +650,7 @@ float function getSpecialDamageMagnitude(int index, int materialLevel)
     ; get magnutide from fire damage (0 index)
     float magnitude = getEnchMagnitude(0, materialLevel, weaponEnchantmentsWeak, weaponEnchantmentsBest, 0)
 
-    if(index == 10)
+    if(index == forcePushIndex)
         magnitude = magnitude * 4.2
     elseIf(index == banishIndex)
         magnitude = magnitude * 2.8
@@ -748,7 +748,7 @@ function createArmorEnchantment(objectReference itemRef, int materialLevel, stri
     int index = 0
 
     if(randomEnchIndex >= effectsFormlistWeak.getSize())
-        ; special ench (fortify melee damage/fortify schools/element resists)
+        ; special ench - fortify melee damage/fortify schools/element resists 
         magnitude = getEnchMagnitude(specialEffectOffset, materialLevel, armorEnchantmentsSpecialWeak, armorEnchantmentsSpecialBest, 0)
 
         while (index < specialEffectCount)
@@ -756,9 +756,12 @@ function createArmorEnchantment(objectReference itemRef, int materialLevel, stri
             magnitudes[index] = magnitude
             ; nerf effects that are too strong: magic schools reductions (5), resist elements (3)
             if(specialEffectCount == 3)
-               magnitudes[index] = math.floor(magnitudes[index] * elementResistsMultipler)      
+                magnitudes[index] = math.floor(magnitudes[index] * elementResistsMultipler)      
+                if(materialLevel == 0)
+                    magnitudes[index] = magnitudes[index] + 1
+                endIf
             elseIf(specialEffectCount == 5)
-               magnitudes[index] = math.floor(magnitudes[index] * fortifySchoolsMultipler)      
+                magnitudes[index] = math.floor(magnitudes[index] * fortifySchoolsMultipler)      
             endIf
             areas[index] = 0
             durations[index] = 0
