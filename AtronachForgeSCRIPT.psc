@@ -1,3 +1,17 @@
+	- decide atronachs
+
+	- no savescumming
+	- list of materials + salts required + gold
+	- list of possible enchs
+	- deleveled
+	- clothing is levle 2
+	- cant get best ench
+	- takes effect from vanilla weapons for compatibility
+	- added few special enchs
+	- requires new game
+	- requiem patch + black soul gems
+	- skse requiered
+
 scriptname AtronachForgeSCRIPT extends ObjectReference
 
 ;import stringUtil
