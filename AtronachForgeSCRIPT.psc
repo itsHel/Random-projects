@@ -13,6 +13,37 @@
 	- requiem patch + black soul gems
 	- skse requiered
 
+
+
+bool FUNCTION scanSubList(formList recipe)
+	int size = recipe.getSize()
+	int cnt = 0
+	while cnt < size
+		form toCheck = recipe.getAt(cnt)
+		if dropBox.getItemCount(toCheck) < 1	
+				;debug.notification(toCheck)
+				;debug.notification(toCheck.GetName())
+; 			;debug.trace("Did not have item "+toCheck+" ("+cnt+") for recipe #"+recipe)
+			return FALSE
+		else
+			; Hel edit
+			if(strangeRemains == (toCheck as ingredient))
+				if dropBox.getItemCount(toCheck) < 2
+					return FALSE
+				endIf
+			endIf
+; 			;debug.trace("I Have item "+toCheck+" ("+cnt+") for recipe #"+recipe)
+			; we have the item in cnt
+		endif
+		cnt += 1
+	endWhile
+
+	return TRUE
+
+endFUNCTION
+
+
+
 scriptname AtronachForgeSCRIPT extends ObjectReference
 
 ;import stringUtil
