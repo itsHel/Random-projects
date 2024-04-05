@@ -232,55 +232,21 @@ Misc changes:
 
 
 
-Fixed issue with Impairment poisons
-Fixed Nocturnal's blessing message
-Fixed Aetherium armor trait name
-Fixed vampire armor trait description
-Fixed missing keywords on dragon priests spell
 Fixed an issue with armor traits not showing as active effects
 Fixed missing perk on Ervinon
-Fixed issue with Nightingale armor trait
-Fixed issue with dexterity tree perks not appearing
-Actually removed draugr beasts from Dustmans Cairn final room
 Fixed enemy not spawning in Twilight Sepulchre
-Fixed issues with wind spells and impairment poisons not lowering damage by proper amount
-Fixed bug with ebony armor trait
-Fixed bugs with Redguard Assassin armor trait
-Fixed issue with werewolf perk armor penetration
 Fixed issue with fortify spell magnitude and duration enchants
 
-Changes:
 Destructive urge perk is stronger
-Lowered damage on the 3 elemental shouts and cyclone
 3 new variants of bestial stew with slightly higher stamina regeneration than the wolf variant
 Rebalanced recipe for the bestial stews
-Raised Skeletal Soldier health slightly
-Buffed infusion damage
-Lowered increased damage from Ancient Shrouded armor trait to 3% per piece
 Lowered movement speed bonus of Nightingale armor trait
-Increased magnitude of telekinetic stride a bit
-Dodge stamina cost raised a bit
-Moved ingredients effects of blue mountain flower around
 Nerfed Precise Aim perk to 10%
 Lowered scale armor bonus to 4% per piece
 Added bag of minor holding and bag of holding as very rare drops to bandits and forsworn respectively (original bag of holding renamed to bag of greater holding)
 Added more loot to forsworn death table
 Lowered attack speed buff from flurry ranks 1 and 2
-Altered prices of some filled and unfilled soul gems
-Rebalanced elemental grasp spells to give set weakness to element
-Fire grasp lowers frost resist and icy grasp lowers fire resist now
 Made the later part of the Dark Brotherhood questline more challenging
-Buffed The Matrons health and resists
 Gave Captain Aquilis better stats and loadout
 Buffed Vile's masque slightly
-
-
-subs ignore minus
-url copied without HTML space - when subs has space - rename?
-subs notice on download
-
-fix extension	
-	https://en.uesp.net/wiki/Skyrim:Dwarven_Automatons#intnote_DawnguardLeveledSpider
-	https://en.uesp.net/wiki/Skyrim:Chaurus#Chaurus_Hunter
-
 
