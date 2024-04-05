@@ -1,10 +1,15 @@
+    - add frostSalts
+    - add numbers frostAtronachStaffIndex
+    - edit recipes black x3
+
 	- decide atronachs
-	- drop book? / any item			on wrong recipe
+	-* drop book? / any item			on wrong recipe
 
 	- no savescumming
 	- list of materials + salts required + gold
 	- list of possible enchs
 	- deleveled
+    - strenght based on normal items
 	- clothing is levle 2
 	- cant get best ench
 	- takes effect from vanilla weapons for compatibility
@@ -13,36 +18,11 @@
 	- requiem patch + black soul gems
 	- skse requiered
 
-
-
-bool FUNCTION scanSubList(formList recipe)
-	int size = recipe.getSize()
-	int cnt = 0
-	while cnt < size
-		form toCheck = recipe.getAt(cnt)
-		if dropBox.getItemCount(toCheck) < 1	
-				;debug.notification(toCheck)
-				;debug.notification(toCheck.GetName())
-; 			;debug.trace("Did not have item "+toCheck+" ("+cnt+") for recipe #"+recipe)
-			return FALSE
-		else
-			; Hel edit
-			if(strangeRemains == (toCheck as ingredient))
-				if dropBox.getItemCount(toCheck) < 2
-					return FALSE
-				endIf
-			endIf
-; 			;debug.trace("I Have item "+toCheck+" ("+cnt+") for recipe #"+recipe)
-			; we have the item in cnt
-		endif
-		cnt += 1
-	endWhile
-
-	return TRUE
-
-endFUNCTION
-
-
+;short
+    Place random enchantment on items, exchange spelltomes or disenchant items at Atronach Forge. Requiem compatible.
+;long
+    #Recipes
+    *Random Enchantment*
 
 scriptname AtronachForgeSCRIPT extends ObjectReference
 
@@ -146,6 +126,7 @@ Formlist property tomesLeveledLists auto
 
 SoulGem property blackSoulGem auto
 Ingredient property voidSalts auto
+Ingredient property frostSalts auto
 Ingredient property briarHeart auto
 
 String armorHelmetString = "armorHelmetString"
@@ -171,6 +152,11 @@ String nonEnchantableSpelltomeMessage = "This book cannot be reforged..."
 String errorMessage = "Item is incompatible with this mod - please reload the game" 
 
 Bool failedWithMessage = FALSE
+
+Int frostAtronachStaffIndex = 
+Int stormAtronachStaffIndex = 
+Int frostAtronachScrollIndex = 
+Int stormAtronachScrollIndex = 
 
 state busy
     event onActivate(objectReference actronaut)
@@ -228,10 +214,10 @@ bool function scanForRecipes(formlist recipes, formList results)
         if currentRecipe == none
             ; debug.trace("ERROR: Atronach Forge trying to check a none recipe")
             else
-            if scanSubList(currentRecipe) == TRUE
+            if scanSubList(currentRecipe, i) == TRUE
                 ; I have found a valid recipe
                 ; debug.trace("Atronach Forge found ingredients for "+currentRecipe)
-                removeIngredients(currentRecipe)
+                removeIngredients(currentRecipe, i)
                 foundCombine = TRUE
                 checking = FALSE
                 else
@@ -281,7 +267,7 @@ endFunction
 ;========================================================
 ;========================================================
 ;========================================================
-bool function scanSubList(formList recipe)
+bool function scanSubList(formList recipe, int recipeIndex)
     int size = recipe.getSize()
     int cnt = 0
 
@@ -292,17 +278,35 @@ bool function scanSubList(formList recipe)
             ;debug.notification(toCheck.GetName())
             ; ;debug.trace("Did not have item "+toCheck+" ("+cnt+") for recipe #"+recipe)
             return FALSE
-
             ; ;debug.trace("I Have item "+toCheck+" ("+cnt+") for recipe #"+recipe)
             ; we have the item in cnt
         endIf
         cnt += 1
     endWhile
 
+    ; AFE edit
+    if(recipeIndex == frostAtronachStaffIndex)
+        if(dropBox.getItemCount(blackSoulGem) < 2)
+            return FALSE
+        endIf
+    elseif(recipeIndex == stormAtronachStaffIndex)
+        if(dropBox.getItemCount(blackSoulGem) < 3)
+            return FALSE
+        endIf
+    elseif(recipeIndex == frostAtronachScrollIndex)
+        if(dropBox.getItemCount(frostSalts) < 2)
+            return FALSE
+        endIf
+    elseif(recipeIndex == stormAtronachScrollIndex)
+        if(dropBox.getItemCount(voidSalts) < 3)
+            return FALSE
+        endIf
+    endIf
+
     return TRUE
 endFunction
 
-function removeIngredients(formlist recipe)
+function removeIngredients(formlist recipe, int recipeIndex)
     int size = recipe.getSize()
     int cnt = 0
 
@@ -312,6 +316,17 @@ function removeIngredients(formlist recipe)
         ; debug.trace("Atronach Forge is consuming "+toCheck)
         cnt += 1
     endWhile
+
+    ; AFE edit
+    if(recipeIndex == frostAtronachStaffIndex)
+        dropBox.removeItem(blackSoulGem, 1)
+    elseif(recipeIndex == stormAtronachStaffIndex)
+        dropBox.removeItem(blackSoulGem, 2)
+    elseif(recipeIndex == frostAtronachScrollIndex)
+        dropBox.removeItem(frostSalts, 1)
+    elseif(recipeIndex == stormAtronachScrollIndex)
+        dropBox.removeItem(voidSalts, 2)
+    endIf
 endFunction
 
 bool function scanForEnchantments(formlist recipes, formList results)
@@ -333,7 +348,7 @@ bool function scanForEnchantments(formlist recipes, formList results)
 	int index = 0
 
     ; looking for item to enchant
-	while index < size
+	while(index < size)
 		removedWeapon = dropBox.getNthForm(index) as weapon
 		removedArmor = dropBox.getNthForm(index) as armor
 
@@ -374,8 +389,7 @@ bool function scanForEnchantments(formlist recipes, formList results)
                 return failGracefully(removedItem, nonEnchantableMessage)
             elseIf(itemOldEnchantment == 2)
                 ;debug.notification("2 - has player made enchantment")
-                if(dropBox.getItemCount(briarHeart) > 0)
-                    dropBox.removeItem(briarHeart, 1)
+                if(scanAndRemoveIngredientsAFE(0, 0, 1))
                     return disenchant(removedItem, 0.0)
                 else
                     return failGracefully(removedItem, wrongRecipeMessage)
@@ -386,7 +400,7 @@ bool function scanForEnchantments(formlist recipes, formList results)
             endIf
 
             int voidSaltsNeeded = materialLevel + voidSaltsBaseCount
-            bool ingredientsMatch = scanAndRemoveEnchIngredients(voidSaltsNeeded)
+            bool ingredientsMatch = scanAndRemoveIngredientsAFE(1, voidSaltsNeeded)
             if(!ingredientsMatch)
                 return failGracefully(removedItem, wrongRecipeMessage)
             endIf
@@ -448,19 +462,6 @@ bool function scanForEnchantments(formlist recipes, formList results)
                             effectIndex = effectCount
                         endIf
 
-                       ; if((weaponEnchantmentsWeak.getAt(randomEnchIndex) as enchantment).getNthEffectMagicEffect(effectIndex) == turnUndeadBaseMgef)
-                     ;       magnitudes[0] = getEnchMagnitude(randomEnchIndex, materialLevel, weaponEnchantmentsWeak, weaponEnchantmentsBest, effectIndex)
-                  ;          magnitudes[1] = getSpecialDamageMagnitude(12, materialLevel)
-                     ;       durations[0] = getEnchDuration(randomEnchIndex, materialLevel, effectIndex)
-                   ;         durations[1] = 1  
-                   ;         areas[0] = 0
-                   ;         areas[1] = 0
-                    ;        effects[0] = turnUndeadBaseMgef
-                   ;         effects[1] = turnUndeadDamageMgef
-
-                     ;       effectIndex = effectCount
-                        ;endIf
-
                         effectIndex += 1
 
                         ; banish/turn undead mgef not found on enchantment
@@ -519,7 +520,7 @@ endFunction
 
 function setToDefaultState()
     enchanter.removeAllItems()
-    failedWithMessage
+    failedWithMessage = FALSE
 endFunction
 
 bool function disenchant(form item, float tempering)
@@ -547,7 +548,7 @@ int function getMaterialLevel(form item, bool isWeapon)
     int keywordCount = item.getNumKeywords()
 
     if(isWeapon)                        ; weapon
-        while i < keywordCount
+        while(i < keywordCount)
             if(keywordsWeaponLevel1.hasForm(item.getNthKeyword(i)))
                 return 0
             elseIf(keywordsWeaponLevel2.hasForm(item.getNthKeyword(i)))
@@ -569,7 +570,7 @@ int function getMaterialLevel(form item, bool isWeapon)
             return 2
         endIf  
     else                                ; armor
-        while i < keywordCount
+        while(i < keywordCount)
             if(keywordsArmorLevel1.hasForm(item.getNthKeyword(i)))
                 return 0
             elseIf(keywordsArmorLevel2.hasForm(item.getNthKeyword(i)))
@@ -594,10 +595,11 @@ int function getMaterialLevel(form item, bool isWeapon)
     endIf
 endFunction
 
-bool function scanAndRemoveEnchIngredients(int voidsaltsMinCount)
-	if (dropBox.getItemCount(blackSoulGem) >= 1 && dropBox.getItemCount(voidSalts) >= voidsaltsMinCount)
-        dropBox.removeItem(blackSoulGem, 1)
-        dropBox.removeItem(voidSalts, voidsaltsMinCount)
+bool function scanAndRemoveIngredientsAFE(int blackSoulGemCount = 0, int voidsaltsCount = 0, int briarHeartCount = 0)
+	if (dropBox.getItemCount(blackSoulGem) >= blackSoulGemCount && dropBox.getItemCount(voidSalts) >= voidsaltsCount && dropBox.getItemCount(briarHeart) >= briarHeartCount)
+        dropBox.removeItem(blackSoulGem, blackSoulGemCount)
+        dropBox.removeItem(voidSalts, voidsaltsCount)
+        dropBox.removeItem(briarHeart, briarHeartCount)
 		return TRUE
 	else
 		return FALSE
@@ -782,7 +784,7 @@ function createArmorEnchantment(objectReference itemRef, int materialLevel, stri
         ; special ench - fortify melee damage/fortify schools/element resists 
         magnitude = getEnchMagnitude(specialEffectOffset, materialLevel, armorEnchantmentsSpecialWeak, armorEnchantmentsSpecialBest, 0)
 
-        while (index < specialEffectCount)
+        while(index < specialEffectCount)
             effects[index] = (armorEnchantmentsSpecialWeak.getAt(index + specialEffectOffset) as enchantment).getNthEffectMagicEffect(0)
             magnitudes[index] = magnitude
             ; nerf effects that are too strong: magic schools reductions (5), resist elements (3)
@@ -862,6 +864,8 @@ objectReference function getItemFromEnchanter(form item)
     ;endWhile
 
     if(!itemRef)
+        failedWithMessage = TRUE
+
         debug.notification(errorMessage)
         return none
     endIf
@@ -876,15 +880,18 @@ bool function scanForSpellomes(formlist recipes, formList results)
 	int size = dropBox.getNumItems()
 	int index = 0
 
-    if(!scanAndRemoveEnchIngredients(0))
-        return FALSE
-    endIf
-
 	while(index < size)
 		spelltomeForm = dropBox.getNthForm(index) as book
 
         ; book found
         if(spelltomeForm)
+            dropBox.removeItem(spelltomeForm, 1, TRUE, enchanter)
+            utility.wait(0.1)
+
+            if(!scanAndRemoveIngredientsAFE(1, 0, 1))
+                return failGracefully(spelltomeForm, wrongRecipeMessage)
+            endIf
+
             index = size
 
             int listsCount = tomesLeveledLists.getSize()
@@ -900,22 +907,23 @@ bool function scanForSpellomes(formlist recipes, formList results)
                         ; spelltomeFound
 
                         if(listItemsCount < 2)
-                            return FALSE
+                            return failGracefully(spelltomeForm, nonEnchantableSpelltomeMessage)
                         endIf
                         int randomTomeIndex = utility.randomInt(0, listItemsCount)
                         while(randomTomeIndex == listItemsIndex)
                             randomTomeIndex = utility.randomInt(0, listItemsCount)
                         endWhile
 
-                        dropBox.removeItem(spelltomeForm, 1, TRUE, enchanter)
-                        objectReference oldSpelltome = getItemFromEnchanter(spelltomeForm)
-                        string oldName = oldSpelltome.getdisplayName()
+                        objectReference oldSpelltomeRef = getItemFromEnchanter(spelltomeForm)
+                        if(oldSpelltomeRef == none)
+                            return FALSE
+                        endIf
+                        string oldName = oldSpelltomeRef.getDisplayName()
 
                         ; cancel if spelltome was renamed (probably by this mod)
-                        if(oldSpelltome.getdisplayName() != spelltomeForm.getName())
-                            oldSpelltome.moveTo(createPoint)
-                            debug.notification(nonEnchantableSpelltomeMessage)
+                        if(oldSpelltomeRef.getDisplayName() != spelltomeForm.getName())
                             failedWithMessage = TRUE
+                            debug.notification(nonEnchantableSpelltomeMessage)
                             return FALSE
                         endIf
 
@@ -924,10 +932,10 @@ bool function scanForSpellomes(formlist recipes, formList results)
                         createdItemRef = createPoint.placeAtMe(leveledSpelltomes.getNthForm(randomTomeIndex))
                         utility.wait(0.1)
 
-                        string createdItemName = createdItemRef.getdisplayName()
+                        string createdItemName = createdItemRef.getDisplayName()
                         createdItemRef.setDisplayName(namePrefix + createdItemName)         ; overrides name forever
 
-                        oldSpelltome.delete()
+                        oldSpelltomeRef.delete()
                         
                         return TRUE
                     endIf
@@ -939,9 +947,7 @@ bool function scanForSpellomes(formlist recipes, formList results)
             endWhile
 
             ; spelltome not found in any leveled lists
-            debug.notification(nonEnchantableSpelltomeMessage)
-            failedWithMessage = TRUE
-            return FALSE
+            return return failGracefully(spelltomeForm, nonEnchantableSpelltomeMessage)
         endIf
 
         index += 1
