@@ -1,28 +1,65 @@
-    - add frostSalts
-    - add numbers frostAtronachStaffIndex
-    - edit recipes black x3
-
-	- decide atronachs
-	-* drop book? / any item			on wrong recipe
-
-	- no savescumming
-	- list of materials + salts required + gold
-	- list of possible enchs
-	- deleveled
-    - strenght based on normal items
-	- clothing is levle 2
-	- cant get best ench
-	- takes effect from vanilla weapons for compatibility
-	- added few special enchs
-	- requires new game
-	- requiem patch + black soul gems
-	- skse requiered
+    - edit recipes
+    - remove from requiem patch
+    - edit salts recipes to common soul gem filled
+    - 16%
+    - material strengths
+    - wood?
+	- list of materials
 
 ;short
     Place random enchantment on items, exchange spelltomes or disenchant items at Atronach Forge. Requiem compatible.
 ;long
-    #Recipes
-    *Random Enchantment*
+    **TLDR** - Place *unenchanted weapon/armor + 4x void salts + filled Black Soul Gem* into Atronach Forge box, press lever and you will get random enchantment on this item. Also edits some vanilla recipes for sake of balance.
+
+    **Requires new game.** Requires SKSE, compatible with anything that doesn't edit AtronachForgeSCRIPT.psc
+
+    Includes Requiem "patch" - ONLY thing this does is it moves Slighted from Forge to room with Ice Wraith so player can access Forge before lategame. I think it's fair considering that OP recipes were altered.
+
+    - Maximum magnitude of Enchantments is weaker than what you can find naturally in game
+    - Enchantments are deleveled with magnitudes based on item material (or gold value if material is unknown)
+    - Enchantments are mostly vanilla, with a few new additions
+    - Enchantment magnitude is automatically balanced on magnitude of ingame enchantments, IE if Requiem edits magnitudes Forge enchantments will be based on requiem values
+    - Clothes have material strength of level 2
+
+    ;Material levels
+        - **level 1** (1x Void Salts required): 
+        - **level 2** (2x Void Salts required): 
+        - **level 3** (3x Void Salts required): Glass, Ebony
+        - **level 4** (4x Void Salts required): Daedric, Dragonbone, Stalhrim
+
+    ;Edited Vanilla Recipes
+    ;Staff of the Flame Atronach
+        - **old:** Fire Salts + Broom + Corundum Ore/Ingot + Greater/Grand/Black Soul Gem
+        - **new:** Fire Salts + Broom + Corundum Ore/Ingot + filled Black Soul Gem
+    ;Staff of the Frost Atronach
+        - **old:** Frost Salts + Broom + Moonstone Ore/Ingot + Greater/Grand/Black Soul Gem
+        - **new:** 2x Frost Salts + Broom + Moonstone Ore/Ingot + 2x filled Black Soul Gem
+    ;Staff of the Storm Atronach
+        - **old:** Void Salts + Broom + Orichalcum Ore/Ingot + Greater/Grand/Black Soul Gem
+        - **new:** 3x Void Salts + Broom + Orichalcum Ore/Ingot + 3x filled Black Soul Gem
+    ;Scroll of Conjure Flame Atronach
+        - **old:** Fire Salts + Roll of Paper + Charcoal
+        - **new:** Fire Salts + Roll of Paper + Charcoal + Ruby/Flawless Ruby/Silver Ruby Ring/Gold Ruby Necklace
+    ;Scroll of Conjure Frost Atronach
+        - **old:** Frost Salts + Roll of Paper + Charcoal
+        - **new:** 2x Frost Salts + Roll of Paper + Charcoal + Sapphire/Flawless Sapphire/Gold Sapphire Ring/Silver Sapphire Necklace
+    ;Scroll of Conjure Storm Atronach
+        - **old:** Void Salts + Roll of Paper + Charcoal
+        - **new:** 3x Void Salts + Roll of Paper + Charcoal + Amethyst/Flawless Amethyst/Silver Amethyst Ring
+    ;Fire Salts
+        - **old:** Salt Pile + Ruby/Flawless Ruby/Silver Ruby Ring/Gold Ruby Necklace + any Soul Gem
+        - **new:** Salt Pile + Ruby/Flawless Ruby/Silver Ruby Ring/Gold Ruby Necklace + filled Common Soul Gem
+    ;Frost Salts
+        - **old:** Salt Pile + Sapphire/Flawless Sapphire/Gold Sapphire Ring/Silver Sapphire Necklace + any Soul Gem
+        - **new:** Salt Pile + Sapphire/Flawless Sapphire/Gold Sapphire Ring/Silver Sapphire Necklace + filled Common Soul Gem
+    ;Void Salts
+        - **old:** Salt Pile + Amethyst/Flawless Amethyst/Silver Amethyst Ring + any Soul Gem
+        - **new:** Salt Pile + Amethyst/Flawless Amethyst/Silver Amethyst Ring + filled Common Soul Gem
+
+    Savescumming to get best enchantments is strictly forbidden!
+
+
+
 
 scriptname AtronachForgeSCRIPT extends ObjectReference
 
