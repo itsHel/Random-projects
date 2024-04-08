@@ -326,9 +326,11 @@
                     case 'scroll-toggle':
                         if (value) {
                             requestAnimationFrame(animateScroll)
+                            document.documentElement.requestFullscreen()
                             $('.sidemenu-wrapper').classList.add('side-hidden')
                         } else {
                             cancelAnimationFrame(scrollRequest)
+                            document.documentElement.exitFullscreen();
                             $('.sidemenu-wrapper').classList.remove('side-hidden')
                         }
                         autoscrollToggleInput.blur()
